@@ -5,26 +5,43 @@
 
     <!-- Public plugin name should be written in Title Case.
      Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-name -->
-    <name>Intellij-air-pets</name>
+    <name>AIR Pets</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <vendor url="https://www.yourcompany.com">YourCompany</vendor>
+    <vendor url="https://github.com/hsz">Jakub Chrzanowski</vendor>
 
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-description -->
     <description><![CDATA[
-        Enter short description for your plugin here.<br>
-        <em>most HTML tags may be used</em>
+        Animated companions for IntelliJ AIR agent sessions.<br>
+        Watch Clippy, Kodee, Runzo, snakes, and rubber ducks work, rest, ask for input, and celebrate completed tasks
+        in a click-through IDE overlay. Click a pet to open its AIR session.<br>
+        Includes an interactive demo, reduced-motion controls, and session labels.
+        Prototype targeting AIR 262.8665.497.
         ]]></description>
 
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.air</depends>
 
 
     <!-- Extensions defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
+        <postStartupActivity implementation="info.chrzanowski.airpets.AirPetsStartupActivity"/>
+        <statusBarWidgetFactory id="AirPets" order="last"
+                                implementation="info.chrzanowski.airpets.ui.AirPetsStatusBarWidgetFactory"/>
     </extensions>
+
+    <actions>
+        <group id="AirPets.Group" text="AIR Pets" popup="true">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <action id="AirPets.Toggle" class="info.chrzanowski.airpets.actions.TogglePetsAction"
+                    text="Show AIR Pets" description="Show or hide animated companions for AIR sessions"/>
+            <action id="AirPets.Demo" class="info.chrzanowski.airpets.actions.ToggleDemoAction"
+                    text="AIR Pets Demo Mode" description="Explore pet states without running a real AIR session"/>
+        </group>
+    </actions>
 
 </idea-plugin>

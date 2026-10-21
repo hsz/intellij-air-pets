@@ -1,0 +1,89 @@
+Green snake and yellow rubber duck animations by Marc Duiker
+https://marcduiker.dev/pixelart
+
+From VS Code Pets: https://github.com/tonybaloney/vscode-pets
+Pinned revision: 93a420cab4b6618bfa9928da0dd941447a145d8f
+
+Bundled files (original GIF contents; renamed for the renderer):
+snake/idle.gif       <- media/snake/green_idle_8fps.gif
+snake/walk.gif       <- media/snake/green_walk_8fps.gif
+snake/run.gif        <- media/snake/green_walk_fast_8fps.gif
+rubber-duck/idle.gif <- media/rubber-duck/yellow_idle_8fps.gif
+rubber-duck/walk.gif <- media/rubber-duck/yellow_walk_8fps.gif
+rubber-duck/run.gif  <- media/rubber-duck/yellow_walk_fast_8fps.gif
+
+Rendering mirrors and scales the animations. No endorsement is implied.
+
+MIT License
+
+Copyright (c) 2022 Anthony Shaw
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+-----------------------------------------------------------------------
+Kodee
+
+Kodee by JetBrains s.r.o. is licensed under CC BY 4.0.
+License: https://creativecommons.org/licenses/by/4.0/
+Official attribution and usage guidelines: https://kotlinfoundation.org/guidelines
+Original artwork: https://kotlinlang.org/docs/kotlin-brand-assets.html
+
+Supplied by the project owner from the Kotlin mascot Digital/Emoji bundle.
+Original GIF contents are unchanged; files are renamed for the renderer:
+kodee/idle.gif    <- kodee-floating.gif
+kodee/walk.gif    <- kodee-walking.gif
+kodee/run.gif     <- kodee-loading.gif
+kodee/waiting.gif <- kodee-greetings.gif
+kodee/done.gif    <- kodee-happy.gif
+
+Rendering scales and mirrors the artwork. No endorsement is implied.
+The snake/duck MIT license above does not apply to Kodee.
+
+-----------------------------------------------------------------------
+Runzo
+
+Character artwork by JetBrains, supplied by the project owner:
+Copy of JetBrains_RunButton_2D_Poses.ai
+Copy of JetBrains_RunButton_2D_Face.ai
+Copy of JetBrains_Characer Guide.pdf (uses the working name "Runee")
+
+runzo/idle.gif, walk.gif, run.gif, waiting.gif, and done.gif are derived
+transparent exports of the supplied poses and facial expressions, with newly
+prepared gentle pose-rocking loops. These are not official animation cycles.
+Rendering scales and mirrors the artwork. No endorsement is implied.
+
+No license or redistribution grant was found in the supplied guide or document
+metadata. All original artwork rights remain with their respective owners.
+The MIT license and Kodee CC BY 4.0 license above do not apply to Runzo.
+Confirm authorization to redistribute the artwork and these derived animations
+before publishing this prototype. This notice does not grant such permission.
+
+-----------------------------------------------------------------------
+Clippy-inspired paperclip
+
+clippy/idle.gif, walk.gif, run.gif, waiting.gif, and done.gif are newly drawn
+interpretations of the visual reference supplied by the project owner.
+Reproducible drawing/animation source: tools/prepare_clippy.py.
+No Microsoft image files or original Office animation data are included.
+
+Clippy (Clippit) is a Microsoft character. These unofficial drawings and loops
+are not endorsed by Microsoft. No character-usage permission was supplied or
+verified; review the character rights before public redistribution.
+The snake/duck MIT license and Kodee CC BY 4.0 license do not grant rights to
+Microsoft's character. This notice does not grant such permission.
