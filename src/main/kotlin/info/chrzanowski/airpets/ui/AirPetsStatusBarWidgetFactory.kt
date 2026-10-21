@@ -17,7 +17,7 @@ import javax.swing.ToolTipManager
 
 class AirPetsStatusBarWidgetFactory : StatusBarWidgetFactory {
     override fun getId() = ID
-    override fun getDisplayName() = "AIR Pets"
+    override fun getDisplayName() = "Air Pets"
     override fun isAvailable(project: Project) = !project.isDisposed
     override fun createWidget(project: Project): StatusBarWidget = AirPetsStatusBarWidget(project)
 

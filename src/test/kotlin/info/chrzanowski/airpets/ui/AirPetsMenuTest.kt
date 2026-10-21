@@ -173,7 +173,7 @@ class AirPetsMenuTest {
 
     @Test
     fun `connection messages remain visible as disabled native warning actions`() {
-        val message = "AIR session connection unavailable. Retrying automatically; demo is still available."
+        val message = "Air session connection unavailable. Retrying automatically; demo is still available."
         val action = menu(message = message).childActionsOrStubs.single { it.templatePresentation.text == message }
         assertFalse(event(action).presentation.isEnabled)
         assertEquals(message, action.templatePresentation.description)
@@ -187,13 +187,13 @@ class AirPetsMenuTest {
     @Test
     fun `native popup supports search and retains disabled navigation and guide`() {
         val popup = JBPopupFactory.getInstance().createActionGroupPopup(
-            "AIR Pets", menu(), DataContext.EMPTY_CONTEXT, JBPopupFactory.ActionSelectionAid.SPEEDSEARCH, true,
+            "Air Pets", menu(), DataContext.EMPTY_CONTEXT, JBPopupFactory.ActionSelectionAid.SPEEDSEARCH, true,
         )
         try {
             @Suppress("UNCHECKED_CAST")
             val step = popup.listStep as ListPopupStep<Any>
             assertTrue(step.isSpeedSearchEnabled)
-            assertEquals("AIR Pets", step.title)
+            assertEquals("Air Pets", step.title)
             val items = step.values.associateBy { step.getTextFor(it) }
             assertTrue(items.containsKey("State Guide"))
             assertTrue(step.isSelectable(items.getValue("State Guide")))

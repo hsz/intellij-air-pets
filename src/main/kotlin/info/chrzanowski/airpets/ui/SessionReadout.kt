@@ -12,7 +12,7 @@ internal fun sessionReadout(session: PetSession, cost: Boolean, duration: Boolea
 
 internal fun sessionMetricsTooltip(session: PetSession, cost: Boolean, duration: Boolean): String = listOfNotNull(
     if (cost) sessionCostText(session.cost)?.let { "${if (session.cost?.estimated == true) "Estimated cost" else "Cost"} (USD): $it" }
-        ?: "Cost not reported by AIR" else null,
+        ?: "Cost not reported by Air" else null,
     if (duration) sessionDurationText(session.observedWorkingMs)?.let { "Observed working time: $it (this project opening only; not historical total)" }
         ?: "Working time unavailable: session not yet observed working" else null,
 ).joinToString(" · ")

@@ -39,6 +39,7 @@ class PetOverlay(
     private val sprites: PetSprites,
     private val onOpen: (String) -> Unit,
     private val onMarkDone: (String) -> Unit = {},
+    private val onQuickChat: ((String, Rectangle) -> Unit)? = null,
     private val onMenu: (JComponent, Int, Int) -> Unit,
 ) : JComponent() {
     private var sessions: List<PetSession> = emptyList()
@@ -47,6 +48,7 @@ class PetOverlay(
     private var drag: Drag? = null
     private var pointer: Point? = null
     private var hoveredId: String? = null
+    private var quickChatSessionId: String? = null
     private var demo = false
     private var labels = true
     private var animated = true
@@ -95,7 +97,7 @@ class PetOverlay(
             override fun mouseMoved(event: MouseEvent) {
                 hoveredId = drag?.takeIf { it.started }?.id ?: petAt(event.point)?.session?.id
                 pointer = event.point
-                if (drag == null) hover.hover(hoveredId)
+                if (drag == null && quickChatSessionId == null) hover.hover(hoveredId)
                 repaint()
             }
 
@@ -148,6 +150,7 @@ class PetOverlay(
                         val pet = petAt(event.point)
                         if (pet != null) {
                             if (pet.canMarkDoneAt(event.point)) onMarkDone(pet.session.id)
+                            else if (!demo && onQuickChat != null) onQuickChat.invoke(pet.session.id, pet.body.union(pet.badge))
                             else onOpen(pet.session.id)
                         }
                     }
@@ -183,6 +186,12 @@ class PetOverlay(
         sessions.forEach { motions.getOrPut(it.id) { PetMotion(it.id) } }
         hover.refresh()
         updateTimer()
+        repaint()
+    }
+
+    internal fun setQuickChatSession(id: String?) {
+        quickChatSessionId = id
+        hover.cancel()
         repaint()
     }
 
@@ -227,7 +236,7 @@ class PetOverlay(
         val delta = (now - lastTick) / 1_000_000_000.0
         lastTick = now
         placements().forEach { placement ->
-            if (placement.session.id != hoveredId && placement.session.id != hover.sessionId) {
+            if (placement.session.id != hoveredId && placement.session.id != hover.sessionId && placement.session.id != quickChatSessionId) {
                 motions.getValue(placement.session.id).advance(delta, placement.travel.toDouble(), placement.session.state)
             }
         }

@@ -17,6 +17,7 @@ import com.intellij.air.shared.core.thread.AgentId
 import com.intellij.air.shared.core.thread.AgentLaunchTargetId
 import com.intellij.air.shared.core.thread.AgentThreadCost
 import com.intellij.air.shared.core.thread.AgentThreadCostKind
+import com.intellij.air.shared.core.thread.AgentThreadInteractionSurfaces
 import com.intellij.air.shared.session.SessionFolderId
 import com.intellij.air.shared.threads.model.AgentSessionActivityOccurrence
 import com.intellij.air.shared.threads.model.AgentSessionActivityOccurrenceKind
@@ -43,6 +44,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertSame
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.math.BigDecimal
@@ -71,7 +73,7 @@ class AirSessionSourceTest {
             assertEquals(activity.name, state, pet.state)
             assertEquals("Session title", pet.title)
             assertEquals(123L, pet.updatedAtMs)
-            assertTrue(pet.detail.startsWith("AIR · "))
+            assertTrue(pet.detail.startsWith("Air · "))
         }
     }
 
@@ -525,6 +527,54 @@ class AirSessionSourceTest {
         collecting.join()
         assertTrue(emissions.last().isEmpty())
         assertFalse(source.markDone(project, id))
+    }
+
+    @Test
+    fun `quick chat uses AIR runtime identity instead of the external agent session id`() {
+        val local = summary(localId = "local-only", path = TREE)
+        val session = local.copy(
+            id = SessionId(local.workspaceId, local.agentId, local.id.launchTargetId, "provider-session"),
+            agentSessionId = "runtime-thread",
+        )
+        val target = requireNotNull(nativeChatTarget(session))
+        assertEquals("junie:provider-session", target.context.threadIdentity)
+        assertEquals("provider-session", target.context.threadId)
+        assertEquals(TREE, target.context.projectDirectory)
+        assertEquals(TREE, target.context.projectPath)
+        assertEquals(session.workspaceId, target.context.sessionWorkspaceId)
+        assertEquals(AgentThreadInteractionSurfaces.NATIVE, target.context.interactionSurfaceId)
+        assertEquals("provider-session", requireNotNull(nativeChatTarget(session.copy(agentSessionId = null))).context.threadId)
+        assertEquals("junie:provider-session", target.address.sessionIdentity)
+    }
+
+    @Test
+    fun `quick chat refuses nonnative and incomplete identities`() {
+        val session = summary()
+        assertEquals(null, nativeChatTarget(session.copy(interactionSurfaceId = "terminal")))
+        assertEquals(null, nativeChatTarget(session.copy(interactionSurfaceId = "")))
+        assertThrows(IllegalArgumentException::class.java) { LocalSessionIdentity("", LocalSessionId("local")) }
+        assertThrows(IllegalArgumentException::class.java) { SessionId(session.workspaceId, session.agentId, session.id.launchTargetId, "") }
+        assertTrue(nativeChatTarget(session.copy(interactionSurfaceId = AgentThreadInteractionSurfaces.NATIVE.value)) != null)
+    }
+
+    @Test
+    fun `quick chat targets are scoped to the indexed project and invalidated on removal`() {
+        var snapshot = workspaceSnapshot()
+        val source = AirSessionSource({ flowOf(snapshot) }, { null })
+        val project = TestProject(ROOT)
+        val pets = collect(source, project)
+        for (pet in pets) {
+            val target = requireNotNull(source.quickChatTarget(project, pet.id))
+            assertEquals(pet.workspacePath, target.context.projectDirectory)
+            assertEquals(null, source.quickChatTarget(TestProject(ROOT), pet.id))
+        }
+        assertEquals(null, source.quickChatTarget(project, "missing"))
+        project.path = "/other"
+        assertEquals(null, source.quickChatTarget(project, pets.first().id))
+        project.path = ROOT
+        snapshot = SessionsSnapshot(listOf(root(listOf(summary().copy(archived = true)))))
+        collect(source, project)
+        pets.forEach { assertEquals(null, source.quickChatTarget(project, it.id)) }
     }
 
     private fun pets(session: SessionSummary, folders: List<SessionFolder> = emptyList()): List<PetSession> =

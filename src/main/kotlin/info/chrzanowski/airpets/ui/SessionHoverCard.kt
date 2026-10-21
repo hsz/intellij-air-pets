@@ -84,7 +84,7 @@ internal class SessionHoverCard(
     ) {
         val contentWidth = (width - insets.left - insets.right).coerceAtLeast(JBUI.scale(80))
         val textWidth = (contentWidth - scroll.verticalScrollBar.preferredSize.width).coerceAtLeast(JBUI.scale(60))
-        title.setWrappedText(if (labels) session.title.ifBlank { "Untitled session" } else "AIR session", textWidth)
+        title.setWrappedText(if (labels) session.title.ifBlank { "Untitled session" } else "Air session", textWidth)
         state.text = "${session.state.label}${if (demo) " · Demo (not live data)" else ""}"
         workspace.setWrappedText(
             listOfNotNull(
@@ -96,13 +96,13 @@ internal class SessionHoverCard(
         workspace.isVisible = workspace.text.isNotEmpty()
         cost.isVisible = showCost
         cost.text = if (session.cost?.estimated == true) "Estimated cost (USD): " else "Cost (USD): "
-        cost.text += sessionCostText(session.cost) ?: "Not reported by AIR"
+        cost.text += sessionCostText(session.cost) ?: "Not reported by Air"
         duration.isVisible = showDuration
         duration.text = "Observed working time: ${sessionDurationText(session.observedWorkingMs) ?: "Not yet observed"}"
-        duration.toolTipText = "This project opening only; not AIR's historical session duration"
+        duration.toolTipText = "This project opening only; not Air's historical session duration"
         open.text = if (demo) "Change demo state" else "Open session"
         done.isVisible = session.state == PetState.DONE
-        done.toolTipText = if (demo) "Remove this demo session" else "Mark as done in AIR (archives this session)"
+        done.toolTipText = if (demo) "Remove this demo session" else "Mark as done in Air (archives this session)"
         scroll.preferredSize = Dimension(contentWidth, minOf(details.preferredSize.height, maxDetailsHeight))
         revalidate()
         repaint()

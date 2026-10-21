@@ -33,7 +33,7 @@ class SessionReadoutTest {
         assertTrue(tooltip.contains("not historical total"))
         assertEquals("", sessionMetricsTooltip(session, cost = false, duration = false))
         val unknown = session.copy(cost = null, observedWorkingMs = null)
-        assertTrue(sessionMetricsTooltip(unknown, cost = true, duration = true).contains("Cost not reported by AIR"))
+        assertTrue(sessionMetricsTooltip(unknown, cost = true, duration = true).contains("Cost not reported by Air"))
         assertTrue(sessionMetricsTooltip(unknown, cost = true, duration = true).contains("session not yet observed working"))
     }
 

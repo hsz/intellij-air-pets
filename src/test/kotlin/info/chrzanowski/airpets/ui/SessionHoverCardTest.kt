@@ -55,12 +55,12 @@ class SessionHoverCardTest {
         assertFalse(card.texts().any { it.contains("working time") })
         card.update(session, false, false, false, true, JBUI.scale(320))
         assertFalse(card.texts().contains(session.title))
-        assertTrue(card.texts().contains("AIR session"))
+        assertTrue(card.texts().contains("Air session"))
         assertTrue(card.texts().contains("Observed working time: 1m 23s"))
         assertFalse(card.texts().any { it.contains("cost", ignoreCase = true) })
         assertTrue(
             card.children().filterIsInstance<JLabel>()
-                .single { it.text.startsWith("Observed working time") }.toolTipText.contains("not AIR's historical"),
+                .single { it.text.startsWith("Observed working time") }.toolTipText.contains("not Air's historical"),
         )
     }
 
@@ -72,7 +72,7 @@ class SessionHoverCardTest {
         for (state in PetState.entries) {
             card.update(PetSession("id", "Task", state), false, true, true, true, JBUI.scale(320))
             assertEquals(state == PetState.DONE, card.buttons().any { it.text == "Mark as done" })
-            assertTrue(card.texts().contains("Cost (USD): Not reported by AIR"))
+            assertTrue(card.texts().contains("Cost (USD): Not reported by Air"))
             assertTrue(card.texts().contains("Observed working time: Not yet observed"))
             assertFalse(card.texts().any { it.contains("Workspace:") })
             card.buttons().single { it.text == "Open session" }.doClick(0)

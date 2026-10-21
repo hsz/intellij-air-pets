@@ -14,6 +14,7 @@ import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.ui.awt.RelativePoint
 import info.chrzanowski.airpets.air.AirSessionSource
+import info.chrzanowski.airpets.air.createAirQuickChat
 import info.chrzanowski.airpets.model.PetSession
 import info.chrzanowski.airpets.model.PetState
 import info.chrzanowski.airpets.model.SessionWorkingTime
@@ -21,6 +22,7 @@ import info.chrzanowski.airpets.model.demoSessions
 import info.chrzanowski.airpets.ui.AirPetsStatusBarWidget
 import info.chrzanowski.airpets.ui.AirPetsStatusBarWidgetFactory
 import info.chrzanowski.airpets.ui.PetOverlay
+import info.chrzanowski.airpets.ui.PetQuickChatPopup
 import info.chrzanowski.airpets.ui.PetSprites
 import info.chrzanowski.airpets.ui.addPetOverlay
 import info.chrzanowski.airpets.ui.petMenuActions
@@ -33,6 +35,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.awt.Point
+import java.awt.Rectangle
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import javax.swing.JComponent
@@ -48,10 +51,20 @@ class AirPetsService(private val project: Project, private val scope: CoroutineS
     private var overlay: PetOverlay? = null
     private var layer: JLayeredPane? = null
     private var liveSessions: List<PetSession> = emptyList()
+    private var discoveryAvailable = false
     private val workingTime = SessionWorkingTime()
     private var demoData = demoSessions()
     private val markingDone = mutableSetOf<String>()
     private var message: String? = null
+    private val quickChat = PetQuickChatPopup(
+        project, scope,
+        session = { id -> liveSessions.firstOrNull { it.id == id } },
+        createView = { id, lifetime, chatScope ->
+            source.quickChatTarget(project, id)?.let { createAirQuickChat(project, it, lifetime, chatScope) }
+        },
+        onOpenInAir = ::open,
+        onSessionChanged = { overlay?.setQuickChatSession(it) },
+    )
 
     @Volatile
     private var disposed = false
@@ -67,7 +80,7 @@ class AirPetsService(private val project: Project, private val scope: CoroutineS
         }
     val statusTooltip: String
         get() = buildString {
-            append(if (demo) "AIR Pets — DEMO (not live data)" else "AIR Pets — ${liveSessions.size} live sessions")
+            append(if (demo) "Air Pets — DEMO (not live data)" else "Air Pets — ${liveSessions.size} live sessions")
             if (!enabled) append(" · pets hidden")
             if (!demo) message?.let { append(" · $it") }
             append(" · Click for preferences and all sessions")
@@ -83,7 +96,7 @@ class AirPetsService(private val project: Project, private val scope: CoroutineS
         job = scope.launch {
             val sprites = withContext(Dispatchers.IO) { PetSprites.load() }
             withContext(Dispatchers.EDT) {
-                if (!disposed) overlay = PetOverlay(sprites, ::open, ::markDone, ::showMenu)
+                if (!disposed) overlay = PetOverlay(sprites, ::open, ::markDone, ::showQuickChat, ::showMenu)
             }
             while (isActive && !disposed) {
                 val attached = withContext(Dispatchers.EDT) { attach() }
@@ -102,6 +115,7 @@ class AirPetsService(private val project: Project, private val scope: CoroutineS
                         withContext(Dispatchers.EDT) {
                             workingTime.observe(sessions)
                             liveSessions = sessions
+                            discoveryAvailable = true
                             message = null
                             refresh()
                         }
@@ -110,11 +124,12 @@ class AirPetsService(private val project: Project, private val scope: CoroutineS
                 } catch (cancelled: CancellationException) {
                     throw cancelled
                 } catch (error: Exception) {
-                    logger<AirPetsService>().warn("Cannot observe AIR sessions; retrying in 5 seconds", error)
+                    logger<AirPetsService>().warn("Cannot observe Air sessions; retrying in 5 seconds", error)
                     withContext(Dispatchers.EDT) {
                         workingTime.observe(emptyList())
                         liveSessions = emptyList()
-                        message = "AIR session connection unavailable. Retrying automatically; demo is still available."
+                        discoveryAvailable = false
+                        message = "Air session connection unavailable. Retrying automatically; demo is still available."
                         refresh()
                     }
                     delay(5_000)
@@ -145,7 +160,7 @@ class AirPetsService(private val project: Project, private val scope: CoroutineS
         target.addPetOverlay(panel)
         target.addComponentListener(resizeListener)
         refresh()
-        logger<AirPetsService>().info("AIR Pets overlay attached (demo=$demo)")
+        logger<AirPetsService>().info("Air Pets overlay attached (demo=$demo)")
         return true
     }
 
@@ -156,6 +171,8 @@ class AirPetsService(private val project: Project, private val scope: CoroutineS
     private fun currentSessions() = if (demo) demoData else liveSessions.map { it.copy(observedWorkingMs = workingTime.elapsedMs(it.id)) }
 
     private fun refresh() {
+        if (!enabled || demo) quickChat.close()
+        quickChat.refresh(retainMissing = !discoveryAvailable)
         overlay?.let {
             it.isVisible = enabled
             it.update(currentSessions(), demo, options.labels, options.animated, options.cost, options.duration)
@@ -165,6 +182,18 @@ class AirPetsService(private val project: Project, private val scope: CoroutineS
             statusBar.updateWidget(AirPetsStatusBarWidgetFactory.ID)
         }
         layer?.repaint()
+    }
+
+    private fun showQuickChat(id: String, anchor: Rectangle) {
+        if (disposed || project.isDisposed || demo || !enabled) return
+        val owner = overlay ?: return
+        try {
+            quickChat.open(id, owner, anchor)
+        } catch (error: Exception) {
+            logger<AirPetsService>().warn("Cannot show Air quick chat", error)
+            message = "Could not open quick chat. Open the session from the Pets menu to continue in Air."
+            refresh()
+        }
     }
 
     private fun open(id: String) {
@@ -177,7 +206,7 @@ class AirPetsService(private val project: Project, private val scope: CoroutineS
             }
             refresh()
         } else if (!source.open(project, id)) {
-            message = "This session is no longer available in AIR."
+            message = "This session is no longer available in Air."
             refresh()
         }
     }
@@ -193,15 +222,15 @@ class AirPetsService(private val project: Project, private val scope: CoroutineS
         scope.launch(Dispatchers.EDT) {
             try {
                 if (!source.markDone(project, id) && !disposed && !project.isDisposed) {
-                    message = "This session cannot be marked as done in AIR right now."
+                    message = "This session cannot be marked as done in Air right now."
                     refresh()
                 }
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: Exception) {
-                logger<AirPetsService>().warn("Cannot mark AIR session as done", error)
+                logger<AirPetsService>().warn("Cannot mark Air session as done", error)
                 if (!disposed && !project.isDisposed) {
-                    message = "Could not mark the session as done in AIR. Please try again."
+                    message = "Could not mark the session as done in Air. Please try again."
                     refresh()
                 }
             } finally {
@@ -223,7 +252,7 @@ class AirPetsService(private val project: Project, private val scope: CoroutineS
     }
 
     private fun createMenu(component: JComponent) = JBPopupFactory.getInstance().createActionGroupPopup(
-        "AIR Pets",
+        "Air Pets",
         petMenuActions(
             options = options,
             demo = { demo },
@@ -246,6 +275,7 @@ class AirPetsService(private val project: Project, private val scope: CoroutineS
         disposed = true
         job?.cancel()
         val cleanup = Runnable {
+            quickChat.dispose()
             overlay?.dispose()
             layer?.removeComponentListener(resizeListener)
             overlay?.let { layer?.remove(it) }

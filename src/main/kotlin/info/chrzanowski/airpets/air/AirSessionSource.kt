@@ -88,6 +88,11 @@ class AirSessionSource internal constructor(
         return true
     }
 
+    internal fun quickChatTarget(project: Project, id: String): AirQuickChatTarget? {
+        val summary = currentIndex(project)?.summaries?.get(id) ?: return null
+        return nativeChatTarget(summary)
+    }
+
     suspend fun markDone(project: Project, id: String): Boolean {
         val index = currentIndex(project) ?: return false
         val summary = index.summaries[id] ?: return false
@@ -153,12 +158,12 @@ class AirSessionSource internal constructor(
     }
 
     private fun SessionSummary.detail(state: PetState): String = when (state) {
-        PetState.WORKING -> "AIR · processing"
-        PetState.WAITING -> if (isWaitingChainedSession) "AIR · waiting for another session" else "AIR · needs input"
-        PetState.REVIEW -> "AIR · reviewing"
-        PetState.RESTING -> "AIR · ready or paused"
-        PetState.DONE -> "AIR · completed"
-        PetState.ERROR -> "AIR · stopped with an error"
+        PetState.WORKING -> "Air · processing"
+        PetState.WAITING -> if (isWaitingChainedSession) "Air · waiting for another session" else "Air · needs input"
+        PetState.REVIEW -> "Air · reviewing"
+        PetState.RESTING -> "Air · ready or paused"
+        PetState.DONE -> "Air · completed"
+        PetState.ERROR -> "Air · stopped with an error"
     }
 }
 

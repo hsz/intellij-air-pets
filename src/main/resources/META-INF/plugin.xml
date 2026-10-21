@@ -5,7 +5,7 @@
 
     <!-- Public plugin name should be written in Title Case.
      Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-name -->
-    <name>AIR Pets</name>
+    <name>Air Pets</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
     <vendor url="https://github.com/hsz">Jakub Chrzanowski</vendor>
@@ -13,12 +13,12 @@
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-description -->
     <description><![CDATA[
-        Animated companions for IntelliJ AIR agent sessions.<br>
+        Animated companions for IntelliJ Air agent sessions.<br>
         Watch Clippy, Kodee, Runzo, snakes, and rubber ducks work, rest, ask for input, and celebrate completed tasks
-        in a click-through IDE overlay. Click a pet to open its AIR session.<br>
+        in a click-through IDE overlay. Click a pet for a native Air Quick Chat titled with its session name.<br>
         Includes compact session hover cards with workspace details, optional cost and working time,
-        click-to-open and completed-session Done actions, an interactive demo, and reduced-motion controls.
-        Prototype targeting AIR 262.8665.497.
+        full-session navigation and completed-session Done actions, an interactive demo, and reduced-motion controls.
+        Prototype targeting Air 262.8665.497.
         ]]></description>
 
     <!-- Product and plugin compatibility requirements.
@@ -36,12 +36,12 @@
     </extensions>
 
     <actions>
-        <group id="AirPets.Group" text="AIR Pets" popup="true">
+        <group id="AirPets.Group" text="Air Pets" popup="true">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
             <action id="AirPets.Toggle" class="info.chrzanowski.airpets.actions.TogglePetsAction"
-                    text="Show AIR Pets" description="Show or hide animated companions for AIR sessions"/>
+                    text="Show Air Pets" description="Show or hide animated companions for Air sessions"/>
             <action id="AirPets.Demo" class="info.chrzanowski.airpets.actions.ToggleDemoAction"
-                    text="AIR Pets Demo Mode" description="Explore pet states without running a real AIR session"/>
+                    text="Air Pets Demo Mode" description="Explore pet states without running a real Air session"/>
         </group>
     </actions>
 

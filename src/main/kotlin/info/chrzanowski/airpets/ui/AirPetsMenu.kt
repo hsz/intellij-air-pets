@@ -28,7 +28,7 @@ internal fun petMenuActions(
     add(menuToggle("Show pets", { options.enabled }, onEnabled))
     add(menuToggle("Animate pets", { options.animated }, onAnimated))
     add(menuToggle("Show session names on hover", { options.labels }, onLabels))
-    add(menuToggle("Show session cost", { options.cost }, onCost, "AIR-reported cost in USD; ≈ marks an estimate."))
+    add(menuToggle("Show session cost", { options.cost }, onCost, "Air-reported cost in USD; ≈ marks an estimate."))
     add(
         menuToggle(
             "Show session time",
