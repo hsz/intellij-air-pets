@@ -16,7 +16,8 @@
         Animated companions for IntelliJ AIR agent sessions.<br>
         Watch Clippy, Kodee, Runzo, snakes, and rubber ducks work, rest, ask for input, and celebrate completed tasks
         in a click-through IDE overlay. Click a pet to open its AIR session.<br>
-        Includes an interactive demo, reduced-motion controls, and session labels.
+        Includes compact session hover cards with workspace details, optional cost and working time,
+        click-to-open and completed-session Done actions, an interactive demo, and reduced-motion controls.
         Prototype targeting AIR 262.8665.497.
         ]]></description>
 

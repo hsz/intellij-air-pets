@@ -15,8 +15,9 @@
 - Independently toggle per-pet AIR cost (USD, with estimated/unavailable handling) and locally observed working time, with saved per-project preferences and reduced-motion support.
 - Kodee and Runzo companions based on the supplied mascot artwork, with transparent state-specific animation and smooth scaling alongside the original pixel-art pets.
 - Clippy-inspired paperclip companion with newly drawn metallic artwork, blinking eyes, attention and celebration animations, automatic assignment, and demo coverage.
+- Compact session hover cards after 450 ms, showing state, workspace/worktree details, independently enabled cost and observed working time, Open session, and Mark as done only for completed sessions using AIR's archive action. Cards never take keyboard focus, allow pointer entry with a 250 ms leave grace, and close on exit, Escape, outside click, window deactivation, dragging, removal, hiding, or disposal.
 
 ### Changed
 
 - Moved floating AIR Pets controls into the IDE's bottom-right status bar, keeping preferences and sessions accessible when pets are hidden.
-- Session names now appear only on hover, directly beneath their pet rather than centered in its movement lane; hidden labels pass clicks through to the IDE.
+- Session names appear immediately on hover in a compact pill beneath their pet, with existing click/drag support; the pill hides while the delayed card is open. The name preference hides both the pill and the card's actual title, using AIR session instead. Cards replace plain tooltips; hidden labels pass clicks through to the IDE.

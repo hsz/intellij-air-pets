@@ -23,6 +23,47 @@ import javax.swing.SwingUtilities
 
 class PetOverlayTest {
     @Test
+    fun `pet hover never supplies a native tooltip`() {
+        val sprites = PetSprites.load()
+        val originalScale = JBUIScale.scale(1.0f)
+        try {
+            for (scale in listOf(1.0f, 2.0f)) {
+                SwingUtilities.invokeAndWait {
+                    JBUIScale.setUserScaleFactorForTest(scale)
+                    val panel = PetOverlay(sprites, {}) { _, _, _ -> }
+                    try {
+                        for (demo in listOf(false, true)) {
+                            for (state in PetState.entries) {
+                                val session = PetSession("tooltip", "Task", state, cost = SessionCost(BigDecimal("1.23")), observedWorkingMs = 83_000)
+                                panel.update(listOf(session), demo = demo, labels = true, animated = false, cost = true, duration = true)
+                                panel.setSize(JBUI.scale(600), panel.overlayHeight)
+                                for (row in listOf(80, 42, 126, 145)) {
+                                    val y = JBUI.scale(row)
+                                    val xs = hitXs(panel, y)
+                                    assertTrue("The pet, badge, metrics and hovered name must remain interactive", xs.isNotEmpty())
+                                    val point = Point(xs.average().toInt(), y)
+                                    panel.mouse(MouseEvent.MOUSE_MOVED, point)
+                                    assertNull(
+                                        "Only the hover card should describe $state (demo=$demo, zoom=$scale, row=$row)",
+                                        panel.getToolTipText(MouseEvent(panel, MouseEvent.MOUSE_MOVED, 0, 0, point.x, point.y, 0, false)),
+                                    )
+                                }
+                                assertNull(panel.toolTipText)
+                                assertNull(panel.getToolTipText(MouseEvent(panel, MouseEvent.MOUSE_MOVED, 0, 0, panel.width - 1, 0, 0, false)))
+                                panel.mouse(MouseEvent.MOUSE_EXITED, Point())
+                            }
+                        }
+                    } finally {
+                        panel.dispose()
+                    }
+                }
+            }
+        } finally {
+            SwingUtilities.invokeAndWait { JBUIScale.setUserScaleFactorForTest(originalScale) }
+        }
+    }
+
+    @Test
     fun `enabled metrics render beside all demo pets at both zoom levels`() {
         val sprites = PetSprites.load()
         val originalScale = JBUIScale.scale(1.0f)
@@ -81,7 +122,7 @@ class PetOverlayTest {
                         assertEquals(panel.getFontMetrics(panel.font).stringWidth("$1.23") + JBUI.scale(10), readoutXs.size)
                         assertTrue("Enabled costs should paint without hovering", paintedXs(panel, readoutY).isNotEmpty())
                         val readout = Point(readoutXs.average().toInt(), readoutY)
-                        assertTrue(panel.getToolTipText(MouseEvent(panel, 0, 0, 0, readout.x, readout.y, 0, false)).contains("$1.23"))
+                        assertNull(panel.getToolTipText(MouseEvent(panel, 0, 0, 0, readout.x, readout.y, 0, false)))
                         panel.mouse(MouseEvent.MOUSE_RELEASED, readout)
                         assertEquals(listOf("cost"), opened)
                         assertTrue("Only the heart badge may mark done", done.isEmpty())
@@ -149,10 +190,7 @@ class PetOverlayTest {
                 assertTrue(paintedXs(panel, y).isNotEmpty())
                 session = session.copy(observedWorkingMs = 125_000)
                 panel.update(listOf(session), demo = false, labels = false, animated = false, duration = true)
-                val x = hitXs(panel, y).average().toInt()
-                val tooltip = panel.getToolTipText(MouseEvent(panel, 0, 0, 0, x, y, 0, false))
-                assertTrue(tooltip.contains("Observed working time: 2m 5s"))
-                assertFalse(tooltip.contains("$1.23"))
+                assertEquals(panel.getFontMetrics(panel.font).stringWidth("2m 5s") + JBUI.scale(10), hitXs(panel, y).size)
                 panel.update(listOf(session), demo = false, labels = false, animated = false, cost = true, duration = true)
                 assertEquals(panel.getFontMetrics(panel.font).stringWidth("$1.23 · 2m 5s") + JBUI.scale(10), hitXs(panel, y).size)
                 panel.update(listOf(session), demo = false, labels = false, animated = false, cost = true)
@@ -298,7 +336,7 @@ class PetOverlayTest {
                             assertTrue("The label must start directly below the pet", panel.contains(labelXs.average().toInt(), bodyY + JBUI.scale(65)))
                             assertTrue("The full label height must remain visible", panel.contains(labelXs.average().toInt(), bodyY + JBUI.scale(83) - 1))
                             assertEquals("Showing a wide name must not move the pet", bodyXs, hitXs(panel, body.y))
-                            assertTrue("The tooltip must retain the full name", panel.getToolTipText(MouseEvent(panel, MouseEvent.MOUSE_MOVED, 0, 0, body.x, body.y, 0, false)).contains(title))
+                            assertNull("Long names must not produce a second tooltip", panel.getToolTipText(MouseEvent(panel, MouseEvent.MOUSE_MOVED, 0, 0, body.x, body.y, 0, false)))
                             panel.mouse(MouseEvent.MOUSE_EXITED, body)
                             assertTrue(hitXs(panel, labelY).isEmpty())
                             assertTrue(paintedXs(panel, labelY).isEmpty())
@@ -339,13 +377,13 @@ class PetOverlayTest {
 
                 val heart = rendered()
                 panel.dispatchEvent(pointer(MouseEvent.MOUSE_MOVED))
-                assertTrue(panel.getToolTipText(pointer(MouseEvent.MOUSE_MOVED)).contains("Mark as done"))
+                assertNull(panel.getToolTipText(pointer(MouseEvent.MOUSE_MOVED)))
                 assertNotEquals("Hovering the heart must show a checkmark", heart, rendered())
                 val bodyY = JBUI.scale(80)
                 val bodyX = (0 until panel.width).first { panel.contains(it, bodyY) } + JBUI.scale(10)
                 panel.dispatchEvent(pointer(MouseEvent.MOUSE_MOVED, x = bodyX, y = bodyY))
                 assertEquals("Hovering the pet must not replace the heart", heart, rendered())
-                assertTrue(panel.getToolTipText(pointer(MouseEvent.MOUSE_MOVED, x = bodyX, y = bodyY)).contains("Click to open in AIR"))
+                assertNull(panel.getToolTipText(pointer(MouseEvent.MOUSE_MOVED, x = bodyX, y = bodyY)))
                 panel.dispatchEvent(pointer(MouseEvent.MOUSE_MOVED))
                 panel.dispatchEvent(pointer(MouseEvent.MOUSE_EXITED))
                 assertEquals("Leaving the overlay must restore the heart", heart, rendered())
@@ -458,7 +496,7 @@ class PetOverlayTest {
                             panel.mouse(MouseEvent.MOUSE_RELEASED, badge)
                             assertEquals(listOf("completed", "completed"), opened)
                             assertEquals(listOf("completed"), finished)
-                            assertTrue(panel.getToolTipText(MouseEvent(panel, MouseEvent.MOUSE_MOVED, 0, 0, body.x, body.y, 0, false)).contains("Drag"))
+                            assertNull(panel.getToolTipText(MouseEvent(panel, MouseEvent.MOUSE_MOVED, 0, 0, body.x, body.y, 0, false)))
                         } finally {
                             panel.dispose()
                         }

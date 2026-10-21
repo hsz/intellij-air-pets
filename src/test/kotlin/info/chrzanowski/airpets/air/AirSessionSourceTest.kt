@@ -76,6 +76,20 @@ class AirSessionSourceTest {
     }
 
     @Test
+    fun `hover metadata uses each sessions own workspace and worktree branch`() {
+        val pets = collect(source(workspaceSnapshot()), TestProject(ROOT)).associateBy { it.title }
+        assertEquals(ROOT, pets.getValue("root").workspacePath)
+        assertEquals(null, pets.getValue("root").worktreeBranch)
+        assertEquals(TREE, pets.getValue("tree").workspacePath)
+        assertEquals("feature", pets.getValue("tree").worktreeBranch)
+        assertEquals("/trees/sibling", pets.getValue("sibling").workspacePath)
+        assertFalse(pets.containsKey("unrelated"))
+        val treeOnly = collect(source(workspaceSnapshot()), TestProject(TREE)).single()
+        assertEquals(TREE, treeOnly.workspacePath)
+        assertEquals("feature", treeOnly.worktreeBranch)
+    }
+
+    @Test
     fun `live activity beats stale errors completion occurrences and done folders`() {
         listOf(
             AgentSessionActivity.PROCESSING to PetState.WORKING,

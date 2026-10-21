@@ -16,6 +16,8 @@ import java.awt.Graphics2D
 import java.awt.Point
 import java.awt.Rectangle
 import java.awt.RenderingHints
+import java.awt.event.ComponentAdapter
+import java.awt.event.ComponentEvent
 import java.awt.event.HierarchyEvent
 import java.awt.event.InputEvent
 import java.awt.event.MouseAdapter
@@ -25,7 +27,6 @@ import javax.swing.JComponent
 import javax.swing.JLayeredPane
 import javax.swing.SwingUtilities
 import javax.swing.Timer
-import javax.swing.ToolTipManager
 import kotlin.math.roundToInt
 
 internal fun JLayeredPane.addPetOverlay(overlay: PetOverlay) {
@@ -54,9 +55,15 @@ class PetOverlay(
     private var lastTick = 0L
     private var disposed = false
     private val timer = Timer(100) { tick() }
+    private val hover = PetHoverPopup(this, { id ->
+        placements().firstOrNull { it.session.id == id }?.let {
+            HoverCardData(it.session, it.body.union(it.badge), demo, labels, cost, duration)
+        }
+    }, onOpen, onMarkDone)
     private val scaleListener = PropertyChangeListener {
         SwingUtilities.invokeLater {
             if (!disposed) {
+                hover.cancel()
                 font = JBUI.Fonts.smallFont()
                 positionInParent()
                 repaint()
@@ -71,10 +78,16 @@ class PetOverlay(
         isFocusable = false
         font = JBUI.Fonts.smallFont()
         cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
-        ToolTipManager.sharedInstance().registerComponent(this)
         JBUIScale.addUserScaleChangeListener(scaleListener)
+        addComponentListener(object : ComponentAdapter() {
+            override fun componentResized(event: ComponentEvent) = hover.cancel()
+            override fun componentHidden(event: ComponentEvent) = hover.cancel()
+        })
         addHierarchyListener { event ->
-            if (event.changeFlags and HierarchyEvent.SHOWING_CHANGED.toLong() != 0L) updateTimer()
+            if (event.changeFlags and HierarchyEvent.SHOWING_CHANGED.toLong() != 0L) {
+                if (!isShowing) hover.cancel()
+                updateTimer()
+            }
         }
         val mouseListener = object : MouseAdapter() {
             override fun mouseEntered(event: MouseEvent) = mouseMoved(event)
@@ -82,6 +95,7 @@ class PetOverlay(
             override fun mouseMoved(event: MouseEvent) {
                 hoveredId = drag?.takeIf { it.started }?.id ?: petAt(event.point)?.session?.id
                 pointer = event.point
+                if (drag == null) hover.hover(hoveredId)
                 repaint()
             }
 
@@ -89,6 +103,7 @@ class PetOverlay(
                 val active = drag
                 if (active != null && event.modifiersEx and InputEvent.BUTTON1_DOWN_MASK != 0) {
                     if (active.started || active.origin.distance(event.point) >= JBUI.scale(5)) {
+                        hover.cancel()
                         active.started = true
                         val scale = JBUIScale.scale(1.0f).toDouble()
                         manualPositions[active.id] = active.position.copy(
@@ -107,12 +122,14 @@ class PetOverlay(
             override fun mouseExited(event: MouseEvent) {
                 pointer = null
                 hoveredId = null
+                hover.hover(null)
                 repaint()
             }
 
             override fun mousePressed(event: MouseEvent) {
                 drag = null
                 mouseMoved(event)
+                hover.cancel()
                 if (event.isPopupTrigger) onMenu(this@PetOverlay, event.x, event.y)
                 else if (event.button == MouseEvent.BUTTON1) {
                     petAt(event.point)?.let { drag = Drag(it.session.id, event.point, it.manualPosition()) }
@@ -124,6 +141,7 @@ class PetOverlay(
                 drag = null
                 cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
                 mouseMoved(event)
+                hover.cancel()
                 when {
                     event.isPopupTrigger -> onMenu(this@PetOverlay, event.x, event.y)
                     event.button == MouseEvent.BUTTON1 && !wasDragging -> {
@@ -154,6 +172,7 @@ class PetOverlay(
         cost: Boolean = false,
         duration: Boolean = false,
     ) {
+        if (this.demo != demo) hover.cancel()
         this.sessions = sessions
         this.demo = demo
         this.labels = labels
@@ -162,6 +181,7 @@ class PetOverlay(
         this.duration = duration
         motions.keys.retainAll(sessions.map { it.id }.toSet())
         sessions.forEach { motions.getOrPut(it.id) { PetMotion(it.id) } }
+        hover.refresh()
         updateTimer()
         repaint()
     }
@@ -173,6 +193,7 @@ class PetOverlay(
 
     override fun removeNotify() {
         timer.stop()
+        hover.cancel()
         drag = null
         pointer = null
         hoveredId = null
@@ -183,7 +204,7 @@ class PetOverlay(
     fun dispose() {
         disposed = true
         timer.stop()
-        ToolTipManager.sharedInstance().unregisterComponent(this)
+        hover.cancel()
         JBUIScale.removeUserScaleChangeListener(scaleListener)
         motions.clear()
         manualPositions.clear()
@@ -206,7 +227,9 @@ class PetOverlay(
         val delta = (now - lastTick) / 1_000_000_000.0
         lastTick = now
         placements().forEach { placement ->
-            motions.getValue(placement.session.id).advance(delta, placement.travel.toDouble(), placement.session.state)
+            if (placement.session.id != hoveredId && placement.session.id != hover.sessionId) {
+                motions.getValue(placement.session.id).advance(delta, placement.travel.toDouble(), placement.session.state)
+            }
         }
         repaint()
     }
@@ -250,19 +273,7 @@ class PetOverlay(
 
     override fun contains(x: Int, y: Int): Boolean = super.contains(x, y) && placements().any { it.contains(Point(x, y)) }
 
-    override fun getToolTipText(event: MouseEvent): String {
-        val pet = petAt(event.point)
-        val session = pet?.session
-        return if (session != null) {
-            "${session.title} — ${session.state.label}${session.detail.takeIf { it.isNotBlank() }?.let { " · $it" }.orEmpty()}" +
-                sessionMetricsTooltip(session, cost, duration).takeIf { it.isNotEmpty() }?.let { " · $it" }.orEmpty() + " · " +
-                when {
-                    pet.canMarkDoneAt(event.point) -> if (demo) "Mark as done (demo only)" else "Mark as done in AIR"
-                    demo -> "Click to change demo state"
-                    else -> "Click to open in AIR"
-                } + " · Drag to reposition"
-        } else "AIR Pets"
-    }
+    override fun getToolTipText(event: MouseEvent): String? = null
 
     override fun paintComponent(graphics: Graphics) {
         val g = graphics.create() as Graphics2D
@@ -356,7 +367,7 @@ class PetOverlay(
         fun contains(point: Point) = body.contains(point) || badge.contains(point) || readout?.contains(point) == true ||
             (labelVisible() && labelContains(point))
 
-        fun labelVisible() = labels && hoveredId == session.id &&
+        fun labelVisible() = labels && !hover.isOpenFor(session.id) && hoveredId == session.id &&
             (drag?.id == session.id || pointer?.let { body.contains(it) || badge.contains(it) || readout?.contains(it) == true || labelContains(it) } == true)
 
         private fun labelContains(point: Point) = Rectangle(

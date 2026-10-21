@@ -5,6 +5,7 @@ import com.intellij.air.frontend.session.catalog.SessionFolderStatus
 import com.intellij.air.frontend.session.catalog.SessionSummary
 import com.intellij.air.frontend.session.catalog.SessionWorkspace
 import com.intellij.air.frontend.session.catalog.SessionsSnapshot
+import com.intellij.air.frontend.session.catalog.WorktreeWorkspace
 import com.intellij.air.frontend.session.toolwindow.ui.AgentThreadsToolWindowModelRpcFrontendService
 import com.intellij.air.shared.core.AgentSessionActivity
 import com.intellij.air.shared.core.identity.LocalSessionIdentity
@@ -61,7 +62,13 @@ class AirSessionSource internal constructor(
             indexes[project] = SessionIndex(basePath, summaries, completed)
             emit(summaries.map { (id, summary) ->
                 val state = summary.petState(completed)
-                PetSession(id, summary.title, state, summary.updatedAtMs, summary.detail(state), summary.sessionCost())
+                val path = summary.localSessionIdentity.projectDirectory.takeIf { it.isNotBlank() }
+                val workspace = workspaces.firstOrNull { FileUtil.pathsEqual(path, it.projectDirectory?.value) }
+                PetSession(
+                    id, summary.title, state, summary.updatedAtMs, summary.detail(state), summary.sessionCost(),
+                    workspacePath = path,
+                    worktreeBranch = (workspace as? WorktreeWorkspace)?.branch,
+                )
             })
         }
     }

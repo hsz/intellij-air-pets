@@ -19,6 +19,8 @@ data class PetSession(
     val detail: String = "",
     val cost: SessionCost? = null,
     val observedWorkingMs: Long? = null,
+    val workspacePath: String? = null,
+    val worktreeBranch: String? = null,
 )
 
 data class SessionCost(val amountUsd: BigDecimal, val estimated: Boolean = false)
@@ -50,6 +52,8 @@ fun demoSessions(): List<PetSession> = listOf(
         detail = "Demo · running tools",
         cost = SessionCost(BigDecimal("0.42"), estimated = true),
         observedWorkingMs = 83_000,
+        workspacePath = "/demo/air-pets",
+        worktreeBranch = "refactor-api",
     ),
     PetSession(
         "demo-waiting",

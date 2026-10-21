@@ -43,7 +43,7 @@ class AirPetsMenuTest {
     @Test
     fun `preferences are native toggles with current state and separate callbacks`() {
         val group = menu()
-        val toggles = group.getChildren(null).filterIsInstance<ToggleAction>()
+        val toggles = group.childActionsOrStubs.filterIsInstance<ToggleAction>()
         assertEquals(
             listOf(
                 "Show pets",
@@ -84,7 +84,7 @@ class AirPetsMenuTest {
     @Test
     fun `cost and time controls are independent and read saved preferences`() {
         options.cost = true
-        val toggles = menu().getChildren(null).filterIsInstance<ToggleAction>()
+        val toggles = menu().childActionsOrStubs.filterIsInstance<ToggleAction>()
             .associateBy { it.templatePresentation.text }
         val cost = toggles.getValue("Show session cost")
         val duration = toggles.getValue("Show session time")
@@ -105,11 +105,11 @@ class AirPetsMenuTest {
         val done = PetSession("done", "Same title", PetState.DONE, detail = "Completed work")
         val waiting = PetSession("waiting", "Same title", PetState.WAITING, detail = "Answer needed")
         val group = menu(listOf(done, waiting, done))
-        val sessions = group.getChildren(null).filterIsInstance<ActionGroup>().first()
+        val sessions = group.childActionsOrStubs.filterIsInstance<DefaultActionGroup>().first()
         assertTrue(sessions.isPopup)
         assertTrue(event(sessions).presentation.isEnabled)
         assertEquals("All Sessions (2)", sessions.templatePresentation.text)
-        val actions = sessions.getChildren(null)
+        val actions = sessions.childActionsOrStubs
         assertEquals(
             listOf("Same title — Needs your input", "Same title — Completed"),
             actions.map { it.templatePresentation.text },
@@ -125,18 +125,35 @@ class AirPetsMenuTest {
     }
 
     @Test
-    fun `empty sessions keep preferences available and state guide non-actionable`() {
-        val actions = menu().getChildren(null)
+    fun `hidden pets retain direct preferences and navigation to every session state`() {
+        options.enabled = false
+        val sessions = PetState.entries.map { PetSession(it.name, it.label, it) }
+        val actions = menu(sessions).childActionsOrStubs
         assertEquals(6, actions.filterIsInstance<ToggleAction>().count { event(it).presentation.isEnabled })
-        val sessions = actions.filterIsInstance<ActionGroup>().first()
+        val groups = actions.filterIsInstance<DefaultActionGroup>()
+        assertEquals(listOf("All Sessions (${sessions.size})", "State Guide"), groups.map { it.templatePresentation.text })
+        groups.first().childActionsOrStubs.forEach { action ->
+            assertTrue(event(action).presentation.isEnabled)
+            action.actionPerformed(event(action))
+        }
+        assertEquals(sessions.map { it.id }.toSet(), opened.toSet())
+        assertFalse(options.enabled)
+        assertTrue(changes.isEmpty())
+    }
+
+    @Test
+    fun `empty sessions keep preferences available and state guide non-actionable`() {
+        val actions = menu().childActionsOrStubs
+        assertEquals(6, actions.filterIsInstance<ToggleAction>().count { event(it).presentation.isEnabled })
+        val sessions = actions.filterIsInstance<DefaultActionGroup>().first()
         assertEquals("All Sessions (0)", sessions.templatePresentation.text)
         assertFalse(event(sessions).presentation.isEnabled)
-        assertTrue(sessions.getChildren(null).isEmpty())
-        val guide = actions.filterIsInstance<ActionGroup>().last()
+        assertTrue(sessions.childActionsOrStubs.isEmpty())
+        val guide = actions.filterIsInstance<DefaultActionGroup>().last()
         assertEquals("State Guide", guide.templatePresentation.text)
         assertTrue(guide.isPopup)
-        assertEquals(PetState.entries.size, guide.getChildren(null).size)
-        guide.getChildren(null).forEachIndexed { index, action ->
+        assertEquals(PetState.entries.size, guide.childActionsOrStubs.size)
+        guide.childActionsOrStubs.forEachIndexed { index, action ->
             assertTrue(requireNotNull(action.templatePresentation.text).contains(PetState.entries[index].label))
             assertNotNull(action.templatePresentation.icon)
             assertFalse(event(action).presentation.isEnabled)
@@ -145,9 +162,9 @@ class AirPetsMenuTest {
 
     @Test
     fun `demo and live data are identified by native section captions`() {
-        assertTrue(menu().getChildren(null).filterIsInstance<Separator>().any { it.text == "Live Sessions" })
+        assertTrue(menu().childActionsOrStubs.filterIsInstance<Separator>().any { it.text == "Live Sessions" })
         demo = true
-        val actions = menu().getChildren(null)
+        val actions = menu().childActionsOrStubs
         assertTrue(actions.filterIsInstance<Separator>().any { it.text == "Demo Sessions (Not Live Data)" })
         assertFalse(actions.filterIsInstance<Separator>().any { it.text == "Live Sessions" })
         val toggle = actions.filterIsInstance<ToggleAction>().last()
@@ -157,12 +174,12 @@ class AirPetsMenuTest {
     @Test
     fun `connection messages remain visible as disabled native warning actions`() {
         val message = "AIR session connection unavailable. Retrying automatically; demo is still available."
-        val action = menu(message = message).getChildren(null).single { it.templatePresentation.text == message }
+        val action = menu(message = message).childActionsOrStubs.single { it.templatePresentation.text == message }
         assertFalse(event(action).presentation.isEnabled)
         assertEquals(message, action.templatePresentation.description)
         assertNotNull(action.templatePresentation.icon)
         assertTrue(
-            menu(message = message).getChildren(null).filterIsInstance<ToggleAction>()
+            menu(message = message).childActionsOrStubs.filterIsInstance<ToggleAction>()
                 .all { event(it).presentation.isEnabled },
         )
     }
