@@ -45,6 +45,46 @@ class PetSpritesTest {
     }
 
     @Test
+    fun `cat and dog have complete transparent pixel art loops`() {
+        val kinds = PetKind.entries.filter { it.resourceName in setOf("cat", "dog") }
+        assertEquals(setOf("cat", "dog"), kinds.map { it.resourceName }.toSet())
+        val durations = mapOf(
+            PetAnimation.IDLE to 1.44,
+            PetAnimation.WALK to 1.08,
+            PetAnimation.RUN to 0.72,
+            PetAnimation.WAITING to 1.44,
+            PetAnimation.DONE to 1.08,
+        )
+        for (kind in kinds) {
+            assertTrue(kind.pixelArt)
+            for ((animation, duration) in durations) {
+                val resource = "/pets/${kind.resourceName}/${animation.fileName}.gif"
+                val clip = requireNotNull(javaClass.getResourceAsStream(resource)).use(GifClip::read)
+                assertEquals("$resource frame count", 12, clip.frames.size)
+                assertSame("$resource loops at its authored duration", clip.frames.first(), clip.frame(duration))
+                val first = clip.frames.first().getRGB(0, 0, 64, 64, null, 0, 64)
+                assertTrue("$resource must animate", clip.frames.drop(1).any {
+                    !first.contentEquals(it.getRGB(0, 0, 64, 64, null, 0, 64))
+                })
+                for ((index, image) in clip.frames.withIndex()) {
+                    assertEquals(64, image.width)
+                    assertEquals(64, image.height)
+                    val pixels = image.getRGB(0, 0, 64, 64, null, 0, 64)
+                    val opaque = pixels.count { it.ushr(24) > 0 }
+                    assertTrue("$resource frame $index must contain a pet, not a background", opaque in 205..3276)
+                    for (y in 0 until 64) {
+                        for (x in 0 until 64) {
+                            if (x < 3 || y < 3 || x >= 61 || y >= 61) {
+                                assertEquals("$resource frame $index margin ($x, $y)", 0, image.getRGB(x, y).ushr(24))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
     fun `mascot clips are transparent bounded and animate without background trails`() {
         val references = Properties().apply {
             requireNotNull(PetSpritesTest::class.java.getResourceAsStream("/pets/mascot-frames.properties")).use(::load)
@@ -117,11 +157,12 @@ class PetSpritesTest {
     fun `mascots use supplied state clips while original pets retain idle fallbacks`() {
         val sprites = PetSprites.load()
         for (kind in PetKind.entries) {
+            val idleFallback = kind.resourceName in setOf("snake", "rubber-duck")
             val expected = mapOf(
                 PetState.WORKING to "run",
                 PetState.REVIEW to "walk",
-                PetState.WAITING to if (kind.pixelArt) "idle" else "waiting",
-                PetState.DONE to if (kind.pixelArt) "idle" else "done",
+                PetState.WAITING to if (idleFallback) "idle" else "waiting",
+                PetState.DONE to if (idleFallback) "idle" else "done",
                 PetState.ERROR to "idle",
                 PetState.RESTING to "idle",
             )

@@ -1,6 +1,6 @@
 # Air Pets
 
-A working IntelliJ IDEA plugin prototype that turns **Air agent sessions into animated companions** above the IDE's bottom edge. **Clippy, Kodee, Runzo, green snakes, and yellow rubber ducks** accompany agents while they work, ask for attention when input is needed, rest, and celebrate results.
+A working IntelliJ IDEA plugin prototype that turns **Air agent sessions into animated companions** above the IDE's bottom edge. **Cats, dogs, Clippy, Kodee, Runzo, green snakes, and yellow rubber ducks** accompany agents while they work, ask for attention when input is needed, rest, and celebrate results.
 
 ## Try it
 
@@ -10,7 +10,7 @@ Requires IntelliJ IDEA **2026.2** and the **Air plugin**. This prototype compile
 ./gradlew runIde -PairPetsDemo=true
 ```
 
-In the sandbox IDE, open a project. Demo mode displays six fictional sessions covering all five species and every state; **click a pet to cycle its state**. It never creates, runs, or changes a real Air session.
+In the sandbox IDE, open a project. Demo mode displays eight fictional sessions covering all seven species and every state; **click a pet to cycle its state**. It never creates, runs, or changes a real Air session.
 
 For normal use, run `./gradlew runIde`, open a project, and create or resume sessions in Air. The overlay updates from Air's live session catalog, without opening its tool window.
 
@@ -47,7 +47,7 @@ Active processing/input/review signals override stale completion/error informati
 
 Only non-archived sessions in the current project's Air workspace and its worktrees are shown. Opening a worktree separately scopes it to that worktree. Identity and species are stable across title/status changes. Removed/archived sessions disappear. Available width limits the overlay to at most 12 pets; attention requests take priority, the status-bar widget shows the total session count, and **All sessions** retains access to every session.
 
-Species are assigned automatically from the session identity. Kodee uses the supplied floating, walking, loading, greeting, and happy animations. Runzo uses short loops prepared from the supplied vector poses. Clippy is a newly drawn paperclip interpretation of the supplied reference, with metallic shading, blinking eyes, a questioning tilt, and a celebratory wink. All three have transparent backgrounds, attention and celebration clips, and smooth scaling; snake and duck retain crisp pixel-art rendering. All five share the same badges, hover names and cards, optional metrics, dragging, and click actions.
+Species are assigned automatically from the session identity. Cats and dogs use newly drawn pixel art with idle, walking, running, attention, and celebration animations. Kodee uses the supplied floating, walking, loading, greeting, and happy animations. Runzo uses short loops prepared from the supplied vector poses. Clippy is a newly drawn paperclip interpretation of the supplied reference, with metallic shading, blinking eyes, a questioning tilt, and a celebratory wink. All pets have transparent backgrounds; the three mascots use smooth scaling, while cats, dogs, snakes, and ducks retain crisp pixel-art rendering. All seven share the same badges, hover names and cards, optional metrics, dragging, and click actions.
 
 ## Build and test
 
@@ -92,4 +92,4 @@ Snake and rubber duck animations by **[Marc Duiker](https://marcduiker.dev/pixel
 
 **Clippy-inspired paperclip**, newly drawn from the supplied visual reference using `tools/prepare_clippy.py`. No Microsoft image files or Office animations are bundled. Clippy/Clippit is Microsoft's character; these are unofficial interpretations with no endorsement or verified character-usage permission. Review character rights before public redistribution. See [artwork preparation](docs/mascot-artwork.md#clippy).
 
-Commercial cat sprites and no-derivatives dog sprites were deliberately not bundled.
+**Original cat and dog artwork**, newly drawn for Air Pets using `tools/prepare_cat_dog.py`, with no external artwork or fonts. Commercial Catset sprites and the no-derivatives dog sprites considered in the earlier research are not bundled. See [artwork preparation](docs/mascot-artwork.md#cats-and-dogs).

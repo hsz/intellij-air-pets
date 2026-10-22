@@ -15,6 +15,7 @@
 - Independently toggle per-pet AIR cost (USD, with estimated/unavailable handling) and locally observed working time, with saved per-project preferences and reduced-motion support.
 - Kodee and Runzo companions based on the supplied mascot artwork, with transparent state-specific animation and smooth scaling alongside the original pixel-art pets.
 - Clippy-inspired paperclip companion with newly drawn metallic artwork, blinking eyes, attention and celebration animations, automatic assignment, and demo coverage.
+- Cat and dog companions with original transparent pixel art, idle/walk/run/attention/celebration animations, automatic session assignment, and an expanded demo covering all seven species.
 - Compact session hover cards after 450 ms, showing state, workspace/worktree details, independently enabled cost and observed working time, Open session, and Mark as done only for completed sessions using AIR's archive action. Cards never take keyboard focus, allow pointer entry with a 250 ms leave grace, and close on exit, Escape, outside click, window deactivation, dragging, removal, hiding, or disposal.
 - Click live pets for a focused, resizable Quick Chat using AIR's native existing-session conversation and composer, with Open in AIR navigation. Escape/outside dismissal preserves the same composer and its draft in memory for the current project opening; native views are released on session removal or project close. Dragging, completed badges, demo interactions, hover cards, and full-session menus retain their existing roles.
 

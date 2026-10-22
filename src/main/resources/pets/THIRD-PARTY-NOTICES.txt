@@ -87,3 +87,13 @@ are not endorsed by Microsoft. No character-usage permission was supplied or
 verified; review the character rights before public redistribution.
 The snake/duck MIT license and Kodee CC BY 4.0 license do not grant rights to
 Microsoft's character. This notice does not grant such permission.
+
+-----------------------------------------------------------------------
+Original cat and dog artwork
+
+cat/idle.gif, walk.gif, run.gif, waiting.gif, and done.gif, and the equivalent
+dog/ clips are newly drawn pixel art created for Air Pets.
+Reproducible drawing/animation source: tools/prepare_cat_dog.py.
+No external artwork, character references, fonts, or downloaded assets are used.
+These are not the commercial Catset or CC BY-ND dog sprites discussed in
+docs/pet-art-research.md, and do not inherit their licensing restrictions.

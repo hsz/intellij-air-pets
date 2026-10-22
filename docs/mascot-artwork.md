@@ -82,11 +82,33 @@ The generator validates transparent bounds, frame uniqueness, timing, and loop s
 
 **Character rights:** Clippy/Clippit is Microsoft's character. Drawing new artwork does not establish permission to use that character. No character-usage grant was supplied or verified; review the rights before public redistribution. The bundled notice does not imply endorsement or extend the other pets' licenses to this character.
 
+## Cats and dogs
+
+Original pixel-art companions drawn for Air Pets: a ginger striped cat with pointed ears and a curved tail, and a tan/brown floppy-eared dog with a blue collar. `tools/prepare_cat_dog.py` draws and animates them using Pillow without input artwork, external fonts, or network requests. No commercial Catset or CC BY-ND dog artwork is used; the earlier [external-artwork exclusions](pet-art-research.md) still apply to those third-party assets, not these new drawings.
+
+Each pet has five transparent 64×64 GIFs with twelve frames, infinite loops, background-restoring disposal, and at least three transparent pixels around every frame. Both face right in the source; the overlay mirrors them for leftward movement and uses nearest-neighbor scaling.
+
+| Clip | State | Loop duration |
+| --- | --- | --- |
+| `idle.gif` | Resting (frozen first frame), error | 1440 ms |
+| `walk.gif` | Review | 1080 ms |
+| `run.gif` | Working | 720 ms |
+| `waiting.gif` | Needs input | 1440 ms |
+| `done.gif` | Completed | 1080 ms |
+
+Reproduce with the Pillow environment above:
+
+```bash
+build/pet-art-tools/bin/python tools/prepare_cat_dog.py --preview-dir build/reports/air-pets/cat-dog-art
+```
+
+The generator checks frame timing, transparency, bounds, and decoded output against the authored frames. Tests cover bundled clips, loop timing, state selection, frozen resting frames, assignment, and demo coverage. The existing galleries render both new species in every state at 100% and 200% zoom on light and dark backgrounds.
+
 ## Runtime integration and verification
 
-- Species are assigned deterministically from the session identity across snake, rubber duck, Kodee, Runzo, and Clippy. Names, state changes, and metric updates do not change species. The six-session demo includes all five.
+- Species are assigned deterministically from the session identity across snake, rubber duck, Kodee, Runzo, Clippy, cat, and dog. Names, state changes, and metric updates do not change species. The eight-session demo includes all seven.
 - Mascots use smooth image interpolation; existing pixel-art sprites retain nearest-neighbor rendering. All pets use the same 64 logical-pixel tile, movement, badge, hover-name, metrics, and drag interaction.
-- Optional waiting/completion clips fall back to idle for the original pets, preserving their appearance and animation. Missing mandatory idle/walk/run clips remain errors rather than silently hiding a broken bundle.
+- Optional waiting/completion clips fall back to idle for the original snake and duck, preserving their appearance and animation. Cats and dogs have dedicated clips for these states. Missing mandatory idle/walk/run clips remain errors rather than silently hiding a broken bundle.
 - Tests decode every bundled GIF, check each mascot frame has transparent space and visible artwork, compare every state's selected clip, and verify resting frames stay still. Overlay regressions cover dragging, click actions, names, metrics, and zoom.
 - All **345** mascot frames are checked pixel-for-pixel against independent Pillow-composited SHA-256 references in `src/test/resources/pets/mascot-frames.properties`, with transparent RGB normalized to zero. Kodee intentionally rotates its face out of view in some original frames; no white-eye assumption is imposed. Tests never regenerate references. After an intentional, visually reviewed artwork change, regenerate with `build/pet-art-tools/bin/python tools/prepare_mascot_references.py`.
 - `PetMascotGalleryTest` writes all states/species on light and dark backgrounds at 100% and 200% scale under `build/reports/air-pets/mascots-{light,dark}-{100,200}.png` for visual inspection.

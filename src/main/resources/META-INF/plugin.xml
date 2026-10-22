@@ -14,7 +14,7 @@
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-description -->
     <description><![CDATA[
         Animated companions for IntelliJ Air agent sessions.<br>
-        Watch Clippy, Kodee, Runzo, snakes, and rubber ducks work, rest, ask for input, and celebrate completed tasks
+        Watch cats, dogs, Clippy, Kodee, Runzo, snakes, and rubber ducks work, rest, ask for input, and celebrate completed tasks
         in a click-through IDE overlay. Click a pet for a native Air Quick Chat titled with its session name.<br>
         Includes compact session hover cards with workspace details, optional cost and working time,
         full-session navigation and completed-session Done actions, an interactive demo, and reduced-motion controls.

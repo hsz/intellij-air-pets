@@ -34,10 +34,10 @@ class PetModelTest {
     }
 
     @Test
-    fun `all four species are assigned and mascots use smooth artwork`() {
-        assertEquals(listOf("snake", "rubber-duck", "kodee", "runzo", "clippy"), PetKind.entries.map { it.resourceName })
+    fun `all species are assigned and mascots use smooth artwork`() {
+        assertEquals(listOf("snake", "rubber-duck", "kodee", "runzo", "clippy", "cat", "dog"), PetKind.entries.map { it.resourceName })
         assertEquals(PetKind.entries.toSet(), (0..100).map { PetKind.forSession("session-$it") }.toSet())
-        assertEquals(listOf("snake", "rubber-duck"), PetKind.entries.filter { it.pixelArt }.map { it.resourceName })
+        assertEquals(listOf("snake", "rubber-duck", "cat", "dog"), PetKind.entries.filter { it.pixelArt }.map { it.resourceName })
         assertEquals(PetKind.entries.toSet(), demoSessions().map { PetKind.forSession(it.id) }.toSet())
     }
 

@@ -33,6 +33,8 @@ class PetKind private constructor(val resourceName: String, val pixelArt: Boolea
             PetKind("kodee", pixelArt = false),
             PetKind("runzo", pixelArt = false),
             PetKind("clippy", pixelArt = false),
+            PetKind("cat"),
+            PetKind("dog"),
         )
 
         fun forSession(id: String): PetKind = entries[Math.floorMod(id.hashCode(), entries.size)]
@@ -93,5 +95,21 @@ fun demoSessions(): List<PetSession> = listOf(
         PetState.ERROR,
         detail = "Demo · command failed",
         observedWorkingMs = 18_000,
+    ),
+    PetSession(
+        "demo-packaging",
+        "Package the plugin",
+        PetState.WORKING,
+        detail = "Demo · preparing the distribution",
+        cost = SessionCost(BigDecimal("0.24"), estimated = true),
+        observedWorkingMs = 54_000,
+    ),
+    PetSession(
+        "demo-documentation-4",
+        "Update documentation",
+        PetState.DONE,
+        detail = "Demo · documentation ready",
+        cost = SessionCost(BigDecimal("0.08")),
+        observedWorkingMs = 27_000,
     ),
 )
