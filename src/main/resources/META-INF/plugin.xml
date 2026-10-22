@@ -13,12 +13,30 @@
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-description -->
     <description><![CDATA[
-        Animated companions for IntelliJ Air agent sessions.<br>
-        Watch cats, dogs, Clippy, Kodee, Runzo, snakes, and rubber ducks work, rest, ask for input, and celebrate completed tasks
-        in a click-through IDE overlay. Click a pet for a native Air Quick Chat titled with its session name.<br>
-        Includes compact session hover cards with workspace details, optional cost and working time,
-        full-session navigation and completed-session Done actions, an interactive demo, and reduced-motion controls.
-        Prototype targeting Air 262.8665.497.
+        <p>Keep an eye on your Air agents without opening the Air tool window.
+        Air Pets gives each session an animated companion in IntelliJ IDEA.
+        Pets move while agents work, ask for attention when input is needed, and celebrate a result.</p>
+
+        <ul>
+            <li><b>See session activity:</b> badges and animations distinguish working, waiting, review,
+                resting, completed, and error states.</li>
+            <li><b>Reply from a pet:</b> click to open Quick Chat with Air's native conversation and reply
+                composer, or open the full session in Air. Unsupported sessions offer the full Air view instead.</li>
+            <li><b>Check the details:</b> hover for the session name, workspace, and worktree branch.
+                Optionally show Air-reported cost in USD and working time observed while the project is open,
+                not the session's historical duration.</li>
+            <li><b>Clear completed sessions:</b> use a completed pet's badge or hover card to mark it done
+                with Air's archive action. This does not stop an agent or approve a review.</li>
+            <li><b>Control the overlay:</b> drag pets aside, turn off animation, hide names, or hide pets.
+                Empty space around them passes clicks through to the IDE.</li>
+        </ul>
+
+        <p>Companions include cats, dogs, Clippy, Kodee, Runzo, snakes, and rubber ducks.
+        Species are assigned automatically. The overlay shows up to 12 pets from the current project
+        and its worktrees; the status-bar menu gives access to all discovered sessions.</p>
+
+        <p><b>Try it:</b> choose Tools &rarr; Air Pets &rarr; Air Pets Demo Mode to explore fictional sessions
+        without running an agent. Click Pets in the status bar or right-click a pet for preferences.</p>
         ]]></description>
 
     <!-- Product and plugin compatibility requirements.

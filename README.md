@@ -1,95 +1,100 @@
 # Air Pets
 
-A working IntelliJ IDEA plugin prototype that turns **Air agent sessions into animated companions** above the IDE's bottom edge. **Cats, dogs, Clippy, Kodee, Runzo, green snakes, and yellow rubber ducks** accompany agents while they work, ask for attention when input is needed, rest, and celebrate results.
+Animated companions for your [Air](https://plugins.jetbrains.com/plugin/33314-air/edit) agent sessions in JetBrains IDEs.
 
-## Try it
+Each session gets a pet that moves while the agent works, asks for attention when it needs input, and celebrates a result. Click the pet to read the conversation and reply without opening the Air tool window.
 
-Requires IntelliJ IDEA **2026.2** and the **Air plugin**. This prototype compiles against IDEA **2026.2.3** and Air **262.8665.497**. Air's integration APIs are internal; other Air versions are not guaranteed compatible.
+![Air Pets demo showing fictional sessions with state badges](docs/demo-preview.png)
 
-```bash
-./gradlew runIde -PairPetsDemo=true
-```
+*Rendered demo preview, not a live Air session.*
 
-In the sandbox IDE, open a project. Demo mode displays eight fictional sessions covering all seven species and every state; **click a pet to cycle its state**. It never creates, runs, or changes a real Air session.
+## What it does
 
-For normal use, run `./gradlew runIde`, open a project, and create or resume sessions in Air. The overlay updates from Air's live session catalog, without opening its tool window.
+- **Shows session activity.** Different animations and badges distinguish working, waiting, review, resting, completed, and error states.
+- **Keeps conversations close.** Quick Chat uses Air's native conversation and reply composer. Open the full session in Air whenever you need it.
+- **Adds context on hover.** A card shows the session name, state, workspace, and worktree branch when available.
+- **Offers optional metrics.** Show Air-reported cost and locally observed working time beneath each pet.
+- **Stays out of the way.** Drag pets aside, turn off animation, or hide the overlay. Empty space around the pets passes clicks through to the IDE.
 
-### Controls
+Companions include cats, dogs, Clippy, Kodee, Runzo, green snakes, and yellow rubber ducks. Species are assigned automatically and stay the same when a session's name or status changes; there is no species picker.
 
-- **Tools → Air Pets → Show Air Pets** toggles the overlay, including restoring it after hiding.
-- **Tools → Air Pets → Air Pets Demo Mode** switches between clearly labeled demo and live data.
-- Click a live pet to open **Quick Chat** beside it: Air's native conversation and reply composer, bound to the existing session. The popup is titled with the session name and follows name changes, falling back to **Untitled session** for blank names. It takes keyboard focus, is resizable/movable, and includes **Open in Air** for the full view. Native questions and permission controls remain Air's responsibility; no simplified chat protocol is substituted. Unsupported/non-native sessions offer the full Air view instead. Demo clicks still cycle fictional states.
-- **Escape** or an outside click closes Quick Chat. Reopening a pet reuses its composer, preserving unsent text and attachments **during this project opening**. Hidden composers are retained in memory until their session is removed/archived or the project closes, not saved by this plugin across restarts. Popup and full Air composers are separate: drafts are not live-synchronized between them; avoid editing both at once.
-- Hover for **450 ms** to open a compact card with the full title, state, workspace path and worktree branch when available, and an **Open session** action that still navigates to full Air. Only completed pets offer **Mark as done**, using Air's own per-session Done action (archive), not a stop, pause, or review command. Demo actions affect fictional sessions only.
-- **Show session names on hover** reveals the compact name pill immediately beneath the pet; long names are shortened. The pill hides while the delayed card is open, avoiding duplicate names, and supports click-to-chat and dragging. Turning this preference off hides the pill and replaces the card's actual title with **Air session**.
-- **Show session cost** and **Show session time** independently enable a compact readout beneath each pet, for example `≈$0.42 · 1m 23s`, and their corresponding card rows. Both are off by default and saved per project; readouts remain visible without hovering, even with animation or names disabled. Hovered name pills appear below the readout.
-- Costs come from Air in **USD**; `≈` marks an estimate and tiny positive costs show `<$0.01`, not zero. Unsupported/unreported costs are omitted from readouts. Time means **observed working time during the current project opening**, not the historical session total: it accumulates while Air reports working, pauses while waiting/reviewing/resting/completed or disconnected, and resets when the project closes. Sessions not yet observed working have no time value; enabled card rows explain missing values. Demo metrics are fictional samples.
-- Hover a completed pet's green **♥** badge to reveal **✓**, then click to **Mark as done** using Air's own per-session Done action (archive). The pet disappears when Air confirms it is archived; clicking the pet or its name opens Quick Chat. In demo mode, this only removes the fictional pet.
-- Drag a pet to move it out of the way anywhere inside the IDE. Its name and badge move with it, and it stays at the dropped location for the current overlay lifetime; positions are not saved across IDE restarts. A drag never opens or finishes a session.
-- Click the **Air icon + Pets** control in the bottom-right IDE status bar, or right-click a pet, for animation, name-label, demo, and visibility controls, a state guide, and **All sessions** navigation. The status-bar widget remains available when pets are hidden or there are no sessions; it can be toggled from the status bar's context menu as **Air Pets**.
-- Both menus use IntelliJ's native popup styling, toggle checkmarks, and keyboard navigation. Start typing to search the menu or session submenu.
-- Turn off **Animate pets** for reduced motion. Visibility, animation, label, cost, and time preferences are saved per project; demo mode is not saved. Working time continues updating once per second without pet animation.
+## Requirements
 
-The transparent background passes mouse events through to the editor/tool windows. Only pet tiles, visible labels, badges, and open popups are interactive. Pets and hover cards never take keyboard focus; Quick Chat intentionally does. The card uses a native non-focusable popup rather than a plain tooltip; a **250 ms** leave grace lets the pointer move into it without closing it. It closes when the pointer leaves the pet/card, on Escape, an outside click, window deactivation, dragging, session removal, hiding pets, or overlay disposal. Hover cards are suppressed while Quick Chat is open, and its pet stays still. Hiding pets or entering demo mode dismisses Quick Chat without discarding its cached draft.
+- IntelliJ IDEA **2026.2**, build **262.8665** or newer. The build targets **2026.2.3**.
+- The **Air plugin**, installed and enabled. The integration is compiled against Air **262.8665.497**.
 
-## Session behavior
+## Using Air Pets
 
-| Air signal | Companion behavior |
+| Action | Control |
 | --- | --- |
-| Processing | Runs or plays its working animation while wandering; blue `…` badge |
-| Needs input / attention / waiting for predecessor | Stays nearby and bobs for attention; amber `?` |
-| Reviewing | Walks slowly; purple `✓` |
-| Ready / draft / paused | Rests on a still idle frame; gray `zZ` |
-| Unread result / completed occurrence / Done folder | Bounces in celebration; green `♥` |
-| Stopped with error | Bobs for attention; red `!` |
+| Open Quick Chat | Click a live pet or its visible name |
+| See session details | Hover over a pet briefly |
+| Move a pet | Drag it anywhere inside the IDE frame |
+| Archive a completed session | Hover its green `♥` badge, then click the `✓`; or choose **Mark as done** in its hover card |
+| Open preferences and the session list | Click **Pets** beside the Air icon in the bottom-right status bar, or right-click a pet |
+| Hide or restore the overlay | **Tools → Air Pets → Show Air Pets** |
 
-Active processing/input/review signals override stale completion/error information. Air's frontend reports **READY**, not a distinct paused state, so the prototype labels that state **Ready / paused** rather than inferring backend execution status. An unread result is displayed as a completion signal, not proof that the entire task has been accepted.
+**Mark as done** uses Air's per-session archive action. It does not stop an agent or approve a review. The pet disappears after Air confirms the session is archived.
 
-Only non-archived sessions in the current project's Air workspace and its worktrees are shown. Opening a worktree separately scopes it to that worktree. Identity and species are stable across title/status changes. Removed/archived sessions disappear. Available width limits the overlay to at most 12 pets; attention requests take priority, the status-bar widget shows the total session count, and **All sessions** retains access to every session.
+The status-bar menu stays available even when pets are hidden or there are no sessions. It includes **All sessions** navigation and toggles for animation, hover names, cost, time, and demo mode. If the widget is missing, enable **Air Pets** in the status bar's context menu.
 
-Species are assigned automatically from the session identity. Cats and dogs use newly drawn pixel art with idle, walking, running, attention, and celebration animations. Kodee uses the supplied floating, walking, loading, greeting, and happy animations. Runzo uses short loops prepared from the supplied vector poses. Clippy is a newly drawn paperclip interpretation of the supplied reference, with metallic shading, blinking eyes, a questioning tilt, and a celebratory wink. All pets have transparent backgrounds; the three mascots use smooth scaling, while cats, dogs, snakes, and ducks retain crisp pixel-art rendering. All seven share the same badges, hover names and cards, optional metrics, dragging, and click actions.
+Turn off **Animate pets** for reduced motion. Visibility, animation, name, cost, and time preferences are saved per project. Demo mode and dragged positions are not saved across restarts. Turning off **Show session names on hover** also replaces the hover card's title with **Air session**.
 
-## Build and test
+### Quick Chat
 
-Use JDK 21+; Gradle resolves the Java 21 compilation toolchain.
+Quick Chat is movable and resizable. It takes keyboard focus so you can type a reply; pets and hover cards do not. Press **Escape** or click outside to close it, or choose **Open in Air** for the full session view. Unsupported sessions offer the full Air view instead of an embedded conversation.
+
+Reopening a pet preserves its unsent text and attachments in memory while the project remains open. The plugin does not save those drafts across project closure or IDE restarts, and removes the cached composer when the session is removed or archived. Quick Chat and the full Air view have separate composers whose drafts are not live-synchronized; avoid editing both at once.
+
+Opening Quick Chat does not start a new session or send a prompt. Sending a reply or responding to Air's native controls can continue agent execution and incur normal Air costs.
+
+### Session states
+
+| State | Badge | Pet behavior |
+| --- | --- | --- |
+| Working | Blue `…` | Runs or plays its working animation while moving |
+| Needs your input | Amber `?` | Bobs for attention; also covers sessions waiting on a predecessor |
+| Ready for review | Purple `✓` | Walks slowly |
+| Ready / paused | Gray `zZ` | Rests on a still frame |
+| Completed | Green `♥` | Celebrates a result |
+| Stopped with an error | Red `!` | Bobs for attention |
+
+Active work, input requests, and review take precedence over older completion or error signals. Air's frontend does not distinguish ready from every paused state. Likewise, an unread result or completion signal is not proof that the task's outcome has been accepted.
+
+### Cost and working time
+
+**Show session cost** and **Show session time** are independent options, both off by default. When enabled, they appear beneath the pet and in its hover card, for example `≈$0.42 · 1m 23s`.
+
+- **Cost** comes from Air in USD. `≈` marks an estimate, small positive amounts show `<$0.01`, and unavailable costs are omitted rather than shown as zero.
+- **Time** counts only work observed during the current project opening, not the session's historical duration. It pauses outside the working state or when disconnected and resets when the project closes. Tracking continues while pets are hidden or animation is off; sessions not yet observed working have no time value.
+
+Demo costs and times are fictional.
+
+## Scope and limitations
+
+- Only non-archived sessions from the current project's Air workspace and its worktrees are shown. Opening a worktree as its own project shows only that worktree's sessions.
+- The overlay shows at most **12 pets**, fewer if space is limited, and prioritizes requests for attention. The status-bar count and **All sessions** menu include sessions beyond that limit.
+- The prototype supports ordinary local project frames. Detached editor windows, remote development, sounds, and direct start/stop/pause controls are not implemented.
+- If Air discovery fails, live pets disappear while the plugin retries. The status-bar tooltip and menu report the connection problem; demo mode remains available.
+- Air Pets adds no independent network client or telemetry and bundles its artwork locally. Session discovery and Quick Chat use Air's APIs; Air remains responsible for agent execution, storage, and network access. Quick Chat is not an offline or read-only view.
+
+## Development
+
+Use **JDK 25**; the build requests a Java 25 compilation toolchain.
+
+**Local build prerequisite:** `settings.gradle.kts` currently includes a machine-specific checkout of the IntelliJ Platform Gradle Plugin. Point its `includeBuild(...)` path at your own checkout before running Gradle. The commands below assume that composite build is available.
 
 ```bash
-./gradlew test
-./gradlew buildPlugin
+# Launch a sandbox IDE with Air and Air Pets
+./gradlew runIde
+
+# Launch with fictional sessions; open a project to see the pets
+./gradlew runIde -PairPetsDemo=true
+
+# Run tests and package the plugin
+./gradlew test buildPlugin verifyPluginStructure
 ```
 
-Install `build/distributions/intellij-air-pets-1.0.0-SNAPSHOT.zip` using **Settings → Plugins → gear → Install Plugin from Disk**, with Air installed and enabled.
+Tests cover session discovery and worktree isolation, state mapping, navigation and archiving, Quick Chat, metrics, rendering, dragging, and click-through behavior. Rendering tests write previews to `build/reports/air-pets/`, including `demo.png` and light/dark mascot galleries at 100% and 200% scale.
 
-Tests cover typed Air discovery, project/worktree isolation, state precedence, navigation, marking sessions done, stable identities, motion bounds, bundled GIF decoding, rendering, dragging, and click-through behavior. The rendering test writes a preview to `build/reports/air-pets/demo.png`.
-Mascot galleries for every state at 100% and 200% scale, on light and dark backgrounds, are written to `build/reports/air-pets/mascots-{light,dark}-{100,200}.png`.
-
-The scaffold's IntelliJ Platform reports are also useful:
-
-```bash
-./gradlew intellijPlatformInfo intellijPlatformSdk intellijPlatformDoctor intellijPlatformSources
-```
-
-Reports are written to `build/reports/intellij-platform/`.
-
-## Implementation and limitations
-
-- A project service collects Air's `StateFlow`; no catalog polling or session-log scraping. Costs update with Air snapshots. A separate one-second UI refresh updates enabled working-time readouts, including in reduced-motion mode; it does not query Air. Time tracking uses a monotonic clock, continues while pets are hidden or demo mode is active, and pauses on a lost connection.
-- A non-opaque Swing component lives in the frame's palette layer, leaving the IDE glass pane and popup layers intact. A shared 10 Hz timer drives visible pets; it stops when hidden, empty, or disposed. GIFs are decoded off the UI thread with their frame timing and disposal metadata.
-- This initial version supports ordinary local project frames. Detached editor windows, remote-development frontend/backend separation, configurable species, sounds, and lifecycle commands other than marking completed sessions done are not implemented.
-- No independent network client or telemetry is added. Artwork is bundled. Quick Chat embeds Air's native UI; sending a reply or responding to its controls can continue agent execution and incur normal Air costs. Air itself remains responsible for agent execution and its network access.
-- Quick Chat uses Air's internal native-view provider, not reflection, transcript scraping, or reparenting Air's mounted tool window. It never creates a session on click. Its cached native views are project-scoped because this Air version has no typed composer-flush hook; they are released on confirmed session removal and project disposal, but survive temporary discovery outages. Subagent navigation and the full session menu remain in the full Air view.
-- If Air discovery fails, pets are cleared, the status-bar widget reports the connection problem in its tooltip and menu, and the plugin retries. Demo remains available.
-
-Research and API evidence: [Air integration](docs/air-api-research.md), [artwork licensing](docs/pet-art-research.md).
-
-## Artwork credits
-
-Snake and rubber duck animations by **[Marc Duiker](https://marcduiker.dev/pixelart)**, from [VS Code Pets](https://github.com/tonybaloney/vscode-pets), pinned to `93a420cab4b6618bfa9928da0dd941447a145d8f`. Six original GIFs are bundled under **MIT**, Copyright (c) 2022 Anthony Shaw; they are scaled/mirrored only at rendering time. Full attribution and license are included in the distributed plugin at [`pets/THIRD-PARTY-NOTICES.txt`](src/main/resources/pets/THIRD-PARTY-NOTICES.txt).
-
-**Kodee by JetBrains s.r.o. is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)**; see the [official mascot usage guidelines](https://kotlinfoundation.org/guidelines). The five supplied GIFs are bundled unchanged apart from their filenames and scaled/mirrored at runtime. No endorsement is implied.
-
-**Runzo artwork by JetBrains**, prepared from the supplied Illustrator poses/expressions and character guide. The transparent GIF loops are new pose-rocking adaptations, not official animation cycles. **No redistribution license was supplied or verified: confirm authorization before publishing the prototype or its derived Runzo artwork.** See [mascot provenance, state mapping, and reproducible preparation](docs/mascot-artwork.md); each mascot has a separate section in the packaged third-party notices.
-
-**Clippy-inspired paperclip**, newly drawn from the supplied visual reference using `tools/prepare_clippy.py`. No Microsoft image files or Office animations are bundled. Clippy/Clippit is Microsoft's character; these are unofficial interpretations with no endorsement or verified character-usage permission. Review character rights before public redistribution. See [artwork preparation](docs/mascot-artwork.md#clippy).
-
-**Original cat and dog artwork**, newly drawn for Air Pets using `tools/prepare_cat_dog.py`, with no external artwork or fonts. Commercial Catset sprites and the no-derivatives dog sprites considered in the earlier research are not bundled. See [artwork preparation](docs/mascot-artwork.md#cats-and-dogs).
+For implementation details and prior validation, see [Air API research](docs/air-api-research.md) and [verification notes](docs/verification.md). The verification notes distinguish automated fixtures from live-agent testing.
