@@ -18,16 +18,16 @@
         Pets move while agents work, ask for attention when input is needed, and celebrate a result.</p>
 
         <ul>
-            <li><b>See session activity:</b> badges and animations distinguish working, waiting, review,
+            <li>Follow session activity through badges and animations for working, waiting, review,
                 resting, completed, and error states.</li>
-            <li><b>Reply from a pet:</b> click to open Quick Chat with Air's native conversation and reply
+            <li>Click a pet to read and reply in Quick Chat using Air's native conversation view and reply
                 composer, or open the full session in Air. Unsupported sessions offer the full Air view instead.</li>
-            <li><b>Check the details:</b> hover for the session name, workspace, and worktree branch.
+            <li>Hover over a pet for its session name, workspace, and worktree branch when available.
                 Optionally show Air-reported cost in USD and working time observed while the project is open,
                 not the session's historical duration.</li>
-            <li><b>Clear completed sessions:</b> use a completed pet's badge or hover card to mark it done
-                with Air's archive action. This does not stop an agent or approve a review.</li>
-            <li><b>Control the overlay:</b> drag pets aside, turn off animation, hide names, or hide pets.
+            <li>Mark a completed session as done from its pet's badge or hover card. This uses Air's
+                archive action; it does not stop an agent or approve a review.</li>
+            <li>Drag pets aside, turn off animation, hide names, or hide pets.
                 Empty space around them passes clicks through to the IDE.</li>
         </ul>
 
@@ -35,7 +35,7 @@
         Species are assigned automatically. The overlay shows up to 12 pets from the current project
         and its worktrees; the status-bar menu gives access to all discovered sessions.</p>
 
-        <p><b>Try it:</b> choose Tools &rarr; Air Pets &rarr; Air Pets Demo Mode to explore fictional sessions
+        <p>Choose Tools &rarr; Air Pets &rarr; Air Pets Demo Mode to try fictional sessions
         without running an agent. Click Pets in the status bar or right-click a pet for preferences.</p>
         ]]></description>
 

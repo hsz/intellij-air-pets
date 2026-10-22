@@ -10,11 +10,11 @@ Each session gets a pet that moves while the agent works, asks for attention whe
 
 ## What it does
 
-- **Shows session activity.** Different animations and badges distinguish working, waiting, review, resting, completed, and error states.
-- **Keeps conversations close.** Quick Chat uses Air's native conversation and reply composer. Open the full session in Air whenever you need it.
-- **Adds context on hover.** A card shows the session name, state, workspace, and worktree branch when available.
-- **Offers optional metrics.** Show Air-reported cost and locally observed working time beneath each pet.
-- **Stays out of the way.** Drag pets aside, turn off animation, or hide the overlay. Empty space around the pets passes clicks through to the IDE.
+- Animations and badges show whether a session is working, waiting, ready for review, resting, completed, or stopped with an error.
+- Read and reply in Quick Chat using Air's native conversation view and reply composer, or open the full session in Air.
+- Hover over a pet for its session name, state, workspace, and worktree branch when available.
+- Optionally show Air-reported cost and locally observed working time beneath each pet.
+- Drag pets aside, turn off animation, or hide the overlay. Empty space around the pets passes clicks through to the IDE.
 
 Companions include cats, dogs, Clippy, Kodee, Runzo, green snakes, and yellow rubber ducks. Species are assigned automatically and stay the same when a session's name or status changes; there is no species picker.
 
@@ -44,7 +44,7 @@ Turn off **Animate pets** for reduced motion. Visibility, animation, name, cost,
 
 Quick Chat is movable and resizable. It takes keyboard focus so you can type a reply; pets and hover cards do not. Press **Escape** or click outside to close it, or choose **Open in Air** for the full session view. Unsupported sessions offer the full Air view instead of an embedded conversation.
 
-Reopening a pet preserves its unsent text and attachments in memory while the project remains open. The plugin does not save those drafts across project closure or IDE restarts, and removes the cached composer when the session is removed or archived. Quick Chat and the full Air view have separate composers whose drafts are not live-synchronized; avoid editing both at once.
+Reopening Quick Chat for a session restores its unsent text and attachments from memory while the project remains open. The plugin does not save those drafts when you close the project or restart the IDE, and removes the cached composer when the session is removed or archived. Quick Chat and the full Air view use separate composers. Drafts do not sync between them, so avoid editing both at once.
 
 Opening Quick Chat does not start a new session or send a prompt. Sending a reply or responding to Air's native controls can continue agent execution and incur normal Air costs.
 
@@ -59,14 +59,14 @@ Opening Quick Chat does not start a new session or send a prompt. Sending a repl
 | Completed | Green `♥` | Celebrates a result |
 | Stopped with an error | Red `!` | Bobs for attention |
 
-Active work, input requests, and review take precedence over older completion or error signals. Air's frontend does not distinguish ready from every paused state. Likewise, an unread result or completion signal is not proof that the task's outcome has been accepted.
+Active work, input requests, and review take precedence over older completion or error signals. Air's frontend reports a ready state rather than a distinct paused state, so the plugin labels it **Ready / paused**. An unread result or completion signal does not mean the task's outcome has been accepted.
 
 ### Cost and working time
 
 **Show session cost** and **Show session time** are independent options, both off by default. When enabled, they appear beneath the pet and in its hover card, for example `≈$0.42 · 1m 23s`.
 
 - **Cost** comes from Air in USD. `≈` marks an estimate, small positive amounts show `<$0.01`, and unavailable costs are omitted rather than shown as zero.
-- **Time** counts only work observed during the current project opening, not the session's historical duration. It pauses outside the working state or when disconnected and resets when the project closes. Tracking continues while pets are hidden or animation is off; sessions not yet observed working have no time value.
+- **Time** counts only work observed since you opened the project, not the session's full history. It pauses outside the working state or when disconnected and resets when the project closes. Tracking continues while pets are hidden or animation is off; sessions not yet observed working have no time value.
 
 Demo costs and times are fictional.
 
