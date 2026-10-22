@@ -99,6 +99,29 @@ class AirQuickChatViewTest {
     }
 
     @Test
+    fun `disposed lifetime cannot create native chat content`() {
+        EdtTestUtil.runInEdtAndWait<Throwable> {
+            val lifetime = Disposer.newDisposable()
+            val scope = CoroutineScope(SupervisorJob())
+            try {
+                val path = requireNotNull(project.basePath)
+                val summary = SessionSummary(
+                    id = SessionId(SessionWorkspaceId(path), AgentId.from("junie"), AgentLaunchTargetId.from("local"), "air-pets-test-only"),
+                    title = "Disposed native view",
+                    updatedAtMs = 1,
+                    archived = false,
+                    localSessionIdentity = LocalSessionIdentity(path, LocalSessionId("air-pets-local-test")),
+                )
+                Disposer.dispose(lifetime)
+                assertNull(createAirQuickChat(project, requireNotNull(nativeChatTarget(summary)), lifetime, scope))
+            } finally {
+                scope.cancel()
+                Disposer.dispose(lifetime)
+            }
+        }
+    }
+
+    @Test
     fun `visible native chat requests the AIR runtime identity and renders existing history`() {
         EdtTestUtil.runInEdtAndWait<Throwable> {
             val lifetime = Disposer.newDisposable()

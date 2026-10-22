@@ -28,6 +28,7 @@ import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.JTextArea
+import javax.swing.SwingUtilities
 
 internal interface QuickChatView : Disposable {
     val component: JComponent
@@ -173,8 +174,8 @@ internal class PetQuickChatPopup(
         entry.conversation.revalidate()
         entry.conversation.repaint()
         entry.focus?.let { focus ->
-            IdeFocusManager.getInstance(project).doWhenFocusSettlesDown {
-                if (active === entry && focus.isShowing) IdeFocusManager.getInstance(project).requestFocus(focus, true)
+            SwingUtilities.invokeLater {
+                if (!project.isDisposed && active === entry && focus.isShowing) IdeFocusManager.getInstance(project).requestFocus(focus, true)
             }
         }
     }

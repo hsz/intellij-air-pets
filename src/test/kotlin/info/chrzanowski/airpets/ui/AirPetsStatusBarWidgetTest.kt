@@ -4,7 +4,6 @@ import com.intellij.air.shared.core.icons.AirSharedCoreIcons
 import com.intellij.mock.MockProject
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.CustomStatusBarWidget
-import com.intellij.openapi.wm.StatusBarWidget
 import com.intellij.openapi.wm.impl.status.TextPanel
 import info.chrzanowski.airpets.AirPetsService
 import info.chrzanowski.airpets.AirPetsSettings
@@ -44,25 +43,21 @@ class AirPetsStatusBarWidgetTest {
                 assertEquals(factory.id, widget.ID())
                 assertTrue(factory.isEnabledByDefault)
                 assertTrue(factory.isAvailable(project))
-                val presentation = widget.getPresentation() as StatusBarWidget.TextPresentation
                 val component = (widget as CustomStatusBarWidget).component as TextPanel.WithIconAndArrows
-                assertEquals("Pets · 0", presentation.getText())
-                assertEquals(presentation.getText(), component.text)
+                assertEquals("Pets · 0", component.text)
                 assertSame("Use AIR's theme-aware icon", AirSharedCoreIcons.Air, component.icon)
-                assertTrue(requireNotNull(presentation.getTooltipText()).contains("0 live sessions"))
-                assertEquals(presentation.getTooltipText(), component.toolTipText)
-                assertNotNull(presentation.getClickConsumer())
+                assertEquals(project.getService(AirPetsService::class.java).statusTooltip, component.toolTipText)
+                assertTrue(requireNotNull(component.toolTipText).contains("0 live sessions"))
                 assertTrue("The status-bar component must handle menu clicks", component.mouseListeners.isNotEmpty())
 
                 settings.state.enabled = false
                 (widget as AirPetsStatusBarWidget).updatePresentation()
                 assertTrue("Hiding pets must not hide their preferences", factory.isAvailable(project))
-                assertEquals("Pets · off", presentation.getText())
-                assertEquals(presentation.getText(), component.text)
+                assertEquals("Pets · off", component.text)
                 assertSame(AirSharedCoreIcons.Air, component.icon)
-                assertTrue(requireNotNull(presentation.getTooltipText()).contains("pets hidden"))
-                assertEquals(presentation.getTooltipText(), component.toolTipText)
-                assertNotNull(presentation.getClickConsumer())
+                assertEquals(project.getService(AirPetsService::class.java).statusTooltip, component.toolTipText)
+                assertTrue(requireNotNull(component.toolTipText).contains("pets hidden"))
+                assertTrue("The hidden-state widget must still handle menu clicks", component.mouseListeners.isNotEmpty())
             } finally {
                 factory.disposeWidget(widget)
             }

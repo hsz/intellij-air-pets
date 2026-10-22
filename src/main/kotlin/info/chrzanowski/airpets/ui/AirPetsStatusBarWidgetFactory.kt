@@ -26,7 +26,7 @@ class AirPetsStatusBarWidgetFactory : StatusBarWidgetFactory {
     }
 }
 
-internal class AirPetsStatusBarWidget(private val project: Project) : CustomStatusBarWidget, StatusBarWidget.TextPresentation {
+internal class AirPetsStatusBarWidget(private val project: Project) : CustomStatusBarWidget {
     private val component = TextPanel.WithIconAndArrows(::getTooltipText).apply {
         icon = AirSharedCoreIcons.Air
         setTextAlignment(JComponent.CENTER_ALIGNMENT)
@@ -46,11 +46,9 @@ internal class AirPetsStatusBarWidget(private val project: Project) : CustomStat
 
     override fun ID() = AirPetsStatusBarWidgetFactory.ID
     override fun getComponent() = component
-    override fun getPresentation() = this
-    override fun getText() = project.service<AirPetsService>().statusText
-    override fun getAlignment() = JComponent.CENTER_ALIGNMENT
-    override fun getTooltipText() = project.service<AirPetsService>().statusTooltip
-    override fun getClickConsumer() = Consumer<MouseEvent> { event ->
+    private fun getText() = project.service<AirPetsService>().statusText
+    private fun getTooltipText() = project.service<AirPetsService>().statusTooltip
+    private fun getClickConsumer() = Consumer<MouseEvent> { event ->
         if (!project.isDisposed) {
             (event.component as? JComponent)?.let { project.service<AirPetsService>().showStatusBarMenu(it) }
         }

@@ -63,6 +63,11 @@ internal fun createAirQuickChat(
 ): QuickChatView? {
     val context = target.context
     val provider = AgentThreadViewContentProviders.find(context) ?: return null
+    val lifetimeState = Disposer.newCheckedDisposable()
+    if (!Disposer.tryRegister(lifetime, lifetimeState)) {
+        Disposer.dispose(lifetimeState)
+        return null
+    }
     val shown = CompletableDeferred<Unit>()
     val panel = JPanel(BorderLayout())
     var disposed = false
@@ -82,7 +87,7 @@ internal fun createAirQuickChat(
     val host = object : AgentThreadViewContentHost {
         override val startupScope = scope
         override suspend fun awaitComponentShowing() = shown.await()
-        override fun isDisposed() = disposed || Disposer.isDisposed(lifetime) || project.isDisposed
+        override fun isDisposed() = disposed || lifetimeState.isDisposed || project.isDisposed
         override fun refreshForFileStateChange() { content?.refreshForFileStateChange() }
         override fun handleRestoreValidationError(validationError: String) {
             panel.removeAll()
