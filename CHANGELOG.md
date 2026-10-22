@@ -20,9 +20,11 @@
 
 ### Changed
 
+- Replaced the template plugin icon with an original white dot-matrix cat on a transparent background, inspired by Air's dotted visual style.
 - Moved floating AIR Pets controls into the IDE's bottom-right status bar, keeping preferences and sessions accessible when pets are hidden.
 - Session names appear immediately on hover in a compact pill beneath their pet, with existing click/drag support; the pill hides while the delayed card is open. The name preference hides both the pill and the card's actual title, using AIR session instead. Cards replace plain tooltips; hidden labels pass clicks through to the IDE.
 
 ### Fixed
 
 - Quick Chat loads the existing AIR conversation using AIR's local/runtime thread ID instead of the external agent session ID, avoiding an empty Draft with disabled input.
+- Session discovery no longer throws `IncompatibleClassChangeError` when AIR exposes `SessionWorkspace` as an interface instead of a class.

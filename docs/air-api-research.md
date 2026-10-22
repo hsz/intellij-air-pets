@@ -37,6 +37,8 @@ All paths below are relative to that exact directory; class paths follow `!/`.
 
 Bytecode for `SessionSummary.isWaitingChainedSession` checks nonempty `waitingOnPredecessors` **or** `aggregateExclusion == WAITING_CHAINED_SESSION`; it is not inferred from the title or a backend session ID.
 
+`SessionWorkspace` is an abstract class in the pinned artifact, but other AIR builds expose it as an interface. Calls compiled against its class getters then fail with `IncompatibleClassChangeError`. The adapter reads getters on concrete `ProjectWorkspace` and `WorktreeWorkspace` objects and projects them into a private workspace value before combining them, avoiding that shared-type ABI dependency without reflection. `AirSessionWorkspaceCompatibilityTest` recreates the interface shape in an isolated class loader and reruns the discovery tests; it reproduced the reported exception before this change. This covers this specific ABI change, not arbitrary AIR API changes.
+
 ## Projection rules
 
 - Compare the current `Project.basePath` with workspace `PathRef.value` using IntelliJ `FileUtil.pathsEqual`, never substring/prefix matching. Missing/blank paths select nothing.

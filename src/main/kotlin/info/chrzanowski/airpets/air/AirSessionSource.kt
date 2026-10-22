@@ -1,9 +1,9 @@
 package info.chrzanowski.airpets.air
 
 import com.intellij.air.frontend.session.catalog.SessionDiscoveryState
+import com.intellij.air.frontend.session.catalog.SessionFolder
 import com.intellij.air.frontend.session.catalog.SessionFolderStatus
 import com.intellij.air.frontend.session.catalog.SessionSummary
-import com.intellij.air.frontend.session.catalog.SessionWorkspace
 import com.intellij.air.frontend.session.catalog.SessionsSnapshot
 import com.intellij.air.frontend.session.catalog.WorktreeWorkspace
 import com.intellij.air.frontend.session.toolwindow.ui.AgentThreadsToolWindowModelRpcFrontendService
@@ -46,6 +46,13 @@ class AirSessionSource internal constructor(
         val completed: Set<LocalSessionIdentity>,
     )
 
+    private data class Workspace(
+        val projectDirectory: String?,
+        val sessions: List<SessionSummary>,
+        val folders: List<SessionFolder>,
+        val branch: String? = null,
+    )
+
     private val indexes = Collections.synchronizedMap(WeakHashMap<Project, SessionIndex>())
 
     fun sessions(project: Project): Flow<List<PetSession>> = flow {
@@ -63,11 +70,11 @@ class AirSessionSource internal constructor(
             emit(summaries.map { (id, summary) ->
                 val state = summary.petState(completed)
                 val path = summary.localSessionIdentity.projectDirectory.takeIf { it.isNotBlank() }
-                val workspace = workspaces.firstOrNull { FileUtil.pathsEqual(path, it.projectDirectory?.value) }
+                val workspace = workspaces.firstOrNull { FileUtil.pathsEqual(path, it.projectDirectory) }
                 PetSession(
                     id, summary.title, state, summary.updatedAtMs, summary.detail(state), summary.sessionCost(),
                     workspacePath = path,
-                    worktreeBranch = (workspace as? WorktreeWorkspace)?.branch,
+                    worktreeBranch = workspace?.branch,
                 )
             })
         }
@@ -116,16 +123,22 @@ class AirSessionSource internal constructor(
         return index.takeIf { FileUtil.pathsEqual(basePath, it.basePath) }
     }
 
-    private fun selectWorkspaces(snapshot: SessionsSnapshot, basePath: String?): List<SessionWorkspace> {
+    private fun selectWorkspaces(snapshot: SessionsSnapshot, basePath: String?): List<Workspace> {
         if (basePath.isNullOrBlank()) return emptyList()
         val roots = snapshot.projects.filter { FileUtil.pathsEqual(basePath, it.projectDirectory?.value) }
         return if (roots.isNotEmpty()) {
-            roots.flatMap { listOf(it) + it.worktrees }
+            roots.flatMap { root ->
+                listOf(Workspace(root.projectDirectory?.value, root.sessions, root.folders)) +
+                    root.worktrees.map { it.toWorkspace() }
+            }
         } else {
             snapshot.projects.flatMap { it.worktrees }
                 .filter { FileUtil.pathsEqual(basePath, it.projectDirectory?.value) }
+                .map { it.toWorkspace() }
         }
     }
+
+    private fun WorktreeWorkspace.toWorkspace(): Workspace = Workspace(projectDirectory?.value, sessions, folders, branch)
 
     private fun SessionSummary.petId(): String {
         val identity = localSessionIdentity
