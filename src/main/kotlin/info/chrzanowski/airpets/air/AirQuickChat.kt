@@ -4,11 +4,14 @@ import com.intellij.air.frontend.session.catalog.SessionSummary
 import com.intellij.air.shared.core.AgentSessionAddress
 import com.intellij.air.shared.core.thread.AgentThreadInteractionSurfaceId
 import com.intellij.air.shared.core.thread.AgentThreadInteractionSurfaces
+import com.intellij.air.shared.core.thread.terminalAgentLaunchTargetId
+import com.intellij.air.shared.prompt.AgentPromptLaunchProfile
 import com.intellij.air.shared.session.AgentThreadViewDeferredStartState
 import com.intellij.air.thread.view.AgentThreadViewContent
 import com.intellij.air.thread.view.AgentThreadViewContentContext
 import com.intellij.air.thread.view.AgentThreadViewContentFile
 import com.intellij.air.thread.view.AgentThreadViewContentHost
+import com.intellij.air.thread.view.AgentThreadViewContentIdentity
 import com.intellij.air.thread.view.AgentThreadViewContentProviders
 import com.intellij.air.thread.view.AgentThreadViewContentRequest
 import com.intellij.openapi.Disposable
@@ -19,7 +22,7 @@ import info.chrzanowski.airpets.ui.QuickChatView
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.StateFlow
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.event.HierarchyEvent
@@ -29,30 +32,54 @@ import javax.swing.JPanel
 
 internal data class AirQuickChatTarget(val context: AgentThreadViewContentContext, val address: AgentSessionAddress)
 
+private val interactionSurfaceGetter by lazy {
+    val getters = SessionSummary::class.java.methods.filter { it.parameterCount == 0 && it.returnType == String::class.java }
+    getters.firstOrNull { it.name == "getInteractionSurfaceId" }
+        ?: getters.firstOrNull { it.name.startsWith("getEffectiveInteractionSurfaceId-") }
+}
+
+private val identityContextConstructor by lazy {
+    AgentThreadViewContentContext::class.java.constructors.firstOrNull {
+        it.parameterTypes.contentEquals(arrayOf(AgentThreadViewContentIdentity::class.java, AgentPromptLaunchProfile::class.java, String::class.java))
+    }
+}
+
 internal fun nativeChatTarget(summary: SessionSummary): AirQuickChatTarget? {
-    val surface = summary.interactionSurfaceId?.let { AgentThreadInteractionSurfaceId.fromOrNull(it) }
-        ?: if (summary.interactionSurfaceId == null) AgentThreadInteractionSurfaces.NATIVE else return null
+    val getter = interactionSurfaceGetter ?: return null
+    val id = summary.id
+    val surfaceId = getter.invoke(summary) as String?
+    val surface = surfaceId?.let { AgentThreadInteractionSurfaceId.fromOrNull(it) }
+        ?: if (surfaceId == null && id.launchTargetId != terminalAgentLaunchTargetId(id.agentId)) AgentThreadInteractionSurfaces.NATIVE else return null
     if (surface != AgentThreadInteractionSurfaces.NATIVE) return null
     val directory = summary.localSessionIdentity.projectDirectory
-    val id = summary.id
     if (directory.isBlank() || id.providerSessionId.isBlank()) return null
     val address = AgentSessionAddress.create(directory, id.agentId.value, id.launchTargetId, id.providerSessionId) ?: return null
-    return AirQuickChatTarget(
-        AgentThreadViewContentContext(
-            agentId = id.agentId,
-            interactionSurfaceId = surface,
-            launchTargetId = id.launchTargetId,
-            threadIdentity = address.sessionIdentity,
-            threadId = id.providerSessionId,
-            projectPath = summary.workspaceId.value,
-            sessionWorkspaceId = summary.workspaceId,
-            projectDirectory = directory,
+    val identity = AgentThreadViewContentIdentity(
+        agentId = id.agentId,
+        interactionSurfaceId = surface,
+        launchTargetId = id.launchTargetId,
+        threadIdentity = address.sessionIdentity,
+        threadId = id.providerSessionId,
+        projectPath = summary.workspaceId.value,
+        sessionWorkspaceId = summary.workspaceId,
+        projectDirectory = directory,
+        subAgentId = null,
+    )
+    val context = identityContextConstructor?.newInstance(identity, null, summary.title) as AgentThreadViewContentContext?
+        ?: AgentThreadViewContentContext(
+            agentId = identity.agentId,
+            interactionSurfaceId = identity.interactionSurfaceId,
+            launchTargetId = identity.launchTargetId,
+            threadIdentity = identity.threadIdentity,
+            threadId = identity.threadId,
+            projectPath = identity.projectPath,
+            sessionWorkspaceId = identity.sessionWorkspaceId,
+            projectDirectory = identity.projectDirectory,
             launchProfile = null,
             threadTitle = summary.title,
-            subAgentId = null,
-        ),
-        address,
-    )
+            subAgentId = identity.subAgentId,
+        )
+    return AirQuickChatTarget(context, address)
 }
 
 internal fun createAirQuickChat(
@@ -77,10 +104,10 @@ internal fun createAirQuickChat(
     }
     val file = object : AgentThreadViewContentFile {
         override val topLevelSessionAddress = target.address
-        override val topLevelSessionAddresses = flowOf(target.address)
-        override val projectDirectory = context.projectDirectory
-        override val threadIdentity = context.threadIdentity
-        override val threadId = context.threadId
+        override val topLevelSessionAddresses: StateFlow<AgentSessionAddress> = MutableStateFlow(target.address)
+        override val projectDirectory = context.identity.projectDirectory
+        override val threadIdentity = context.identity.threadIdentity
+        override val threadId = context.identity.threadId
         override val launchProfile = context.launchProfile
         override val deferredStartStates = MutableStateFlow<AgentThreadViewDeferredStartState?>(null)
     }
