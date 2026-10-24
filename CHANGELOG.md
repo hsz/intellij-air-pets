@@ -2,7 +2,13 @@
 
 # Intellij-air-pets Changelog
 
-## [Unreleased]
+## Unreleased
+
+### Fixes
+
+- Guard session folder access against API relocation with reflection
+
+## 1.0.1 - 2026-10-24
 
 ### Added
 

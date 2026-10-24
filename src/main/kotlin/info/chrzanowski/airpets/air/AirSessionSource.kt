@@ -1,8 +1,6 @@
 package info.chrzanowski.airpets.air
 
 import com.intellij.air.frontend.session.catalog.SessionDiscoveryState
-import com.intellij.air.frontend.session.catalog.SessionFolder
-import com.intellij.air.frontend.session.catalog.SessionFolderStatus
 import com.intellij.air.frontend.session.catalog.SessionSummary
 import com.intellij.air.frontend.session.catalog.SessionsSnapshot
 import com.intellij.air.frontend.session.catalog.WorktreeWorkspace
@@ -49,7 +47,7 @@ class AirSessionSource internal constructor(
     private data class Workspace(
         val projectDirectory: String?,
         val sessions: List<SessionSummary>,
-        val folders: List<SessionFolder>,
+        val folders: List<Any>,
         val branch: String? = null,
     )
 
@@ -60,8 +58,8 @@ class AirSessionSource internal constructor(
             val basePath = project.basePath
             val workspaces = selectWorkspaces(snapshot, basePath)
             val completed = workspaces.flatMap { it.folders }
-                .filter { it.status == SessionFolderStatus.DONE }
-                .flatMap { it.sessions }
+                .filter { it.folderStatus() == "DONE" }
+                .flatMap { it.folderSessions() }
                 .toSet()
             val summaries = workspaces.flatMap { it.sessions }
                 .filterNot { it.archived }
@@ -169,6 +167,17 @@ class AirSessionSource internal constructor(
             localSessionIdentity in completed -> PetState.DONE
         else -> PetState.RESTING
     }
+
+    private fun Any.folderStatus(): String? = readFolderProperty("Status")?.let {
+        if (it is Enum<*>) it.name else it.toString()
+    }
+
+    private fun Any.folderSessions(): List<LocalSessionIdentity> =
+        (readFolderProperty("Sessions") as? Iterable<*>)?.filterIsInstance<LocalSessionIdentity>().orEmpty()
+
+    private fun Any.readFolderProperty(name: String): Any? = javaClass.methods
+        .firstOrNull { it.name == "get$name" && it.parameterCount == 0 }
+        ?.invoke(this)
 
     private fun SessionSummary.detail(state: PetState): String = when (state) {
         PetState.WORKING -> "Air · processing"
