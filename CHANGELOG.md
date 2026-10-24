@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+### Added
+
+- Register JetBrains Marketplace error handler for plugin crash reporting
+
 ### Fixes
 
 - Guard session folder access against API relocation with reflection
